@@ -110,7 +110,7 @@ export default function App() {
 
   const allAnswers = useMemo(() => {
     if (!puzzles) return []
-    return puzzles.map(p => ({ answer: p.answer, source: p.source }))
+    return puzzles.map(p => p.answer)
   }, [puzzles])
 
   // Load saved game state
@@ -212,7 +212,7 @@ export default function App() {
     const q = normalize(guess)
     if (!q) return []
     return allAnswers
-      .filter(a => normalize(a.answer).includes(q))
+      .filter(a => normalize(a).includes(q))
       .slice(0, 8)
   }, [guess, allAnswers])
 
@@ -222,7 +222,7 @@ export default function App() {
     if (!trimmed) return
 
     const isCorrect = normalize(trimmed) === normalize(puzzle.answer)
-    const isValidAnswer = allAnswers.some(a => normalize(a.answer) === normalize(trimmed))
+    const isValidAnswer = allAnswers.some(a => normalize(a) === normalize(trimmed))
 
     if (!isValidAnswer) {
       setInputError(true)
@@ -268,7 +268,7 @@ export default function App() {
     if (e.key === 'Enter') {
       if (showAutocomplete && autocompleteIndex >= 0 && filteredAnswers[autocompleteIndex]) {
         e.preventDefault()
-        setGuess(filteredAnswers[autocompleteIndex].answer)
+        setGuess(filteredAnswers[autocompleteIndex])
         setShowAutocomplete(false)
         setAutocompleteIndex(-1)
       } else {
@@ -437,18 +437,17 @@ export default function App() {
                   <div className="autocomplete" ref={autocompleteRef}>
                     {filteredAnswers.map((a, i) => (
                       <div
-                        key={a.answer}
+                        key={a}
                         className={`autocomplete-item ${i === autocompleteIndex ? 'active' : ''}`}
                         onMouseDown={(e) => {
                           e.preventDefault()
-                          setGuess(a.answer)
+                          setGuess(a)
                           setShowAutocomplete(false)
                           setAutocompleteIndex(-1)
                           inputRef.current?.focus()
                         }}
                       >
-                        <span className="answer-name">{a.answer}</span>
-                        <span className="answer-source">{a.source}</span>
+                        <span className="answer-name">{a}</span>
                       </div>
                     ))}
                   </div>
@@ -513,9 +512,6 @@ export default function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-sources">
-          Based on the Google SRE Book, Martin Fowler's Catalog, 12 Factor App, and Designing Data-Intensive Applications
-        </div>
         <div className="footer-credit">
           {'\u00A9'} <a href="https://adar.la" target="_blank" rel="noopener noreferrer">Adar Butel</a>
         </div>
