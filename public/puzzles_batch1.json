@@ -1,0 +1,1402 @@
+[
+  {
+    "id": 1,
+    "answer": "N+1 Query Problem",
+    "source": "Martin Fowler",
+    "clues": [
+      "The dashboard page is slow, but each individual query runs in under 10ms",
+      "Database connection pool keeps getting exhausted during list page loads",
+      "The slow endpoint issues hundreds of nearly identical SQL statements per request",
+      "Adding eager loading to the ORM relationship reduced query count from 201 to 2",
+      "Each item in the parent collection triggers a separate SELECT to fetch its children",
+      "The ORM lazily loads related records one row at a time inside a loop over the parent result set"
+    ],
+    "explanation": "A performance anti-pattern where fetching a list of N items triggers N additional queries to load related data, instead of fetching everything in a single joined query."
+  },
+  {
+    "id": 2,
+    "answer": "Split-Brain",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Users are reporting inconsistent data depending on which server handles their request",
+      "A network partition occurred and the system kept accepting writes on both sides",
+      "Two nodes each believe they are the authoritative primary and are accepting conflicting writes",
+      "After the network healed, we discovered divergent data that cannot be automatically reconciled",
+      "The cluster fencing mechanism failed, so both partitions promoted themselves to leader",
+      "Two nodes in the same cluster each think they are the sole leader after a network partition, causing divergent writes"
+    ],
+    "explanation": "A distributed system failure where a network partition causes two or more nodes to independently assume the leader role, leading to conflicting writes and data divergence."
+  },
+  {
+    "id": 3,
+    "answer": "Thundering Herd",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "The service crashes every time it restarts, even though load was fine before the outage",
+      "Our cache node went down and the database was immediately overwhelmed",
+      "Thousands of clients simultaneously retried when the service came back online, crashing it again",
+      "Adding jittered backoff to retry logic eliminated the coordinated spike",
+      "A single cache expiration caused every concurrent request to simultaneously hit the database for the same key",
+      "All waiting clients stampede the backend at once the instant a shared resource becomes available or expires"
+    ],
+    "explanation": "A pattern where a large number of clients simultaneously rush to access a resource when it becomes available or a cache expires, overwhelming the backend."
+  },
+  {
+    "id": 4,
+    "answer": "God Object",
+    "source": "Martin Fowler",
+    "clues": [
+      "Every new feature seems to require changes to the same file",
+      "Merge conflicts happen constantly because every developer touches this one class",
+      "The class has over 5,000 lines and imports from nearly every module in the system",
+      "It handles user authentication, order processing, email sending, and report generation all in one place",
+      "This single class knows about and orchestrates every subsystem, violating the Single Responsibility Principle",
+      "One monolithic class has accumulated so many responsibilities that it effectively controls the entire application's behavior"
+    ],
+    "explanation": "An anti-pattern where a single class takes on too many responsibilities, becoming a central point that knows too much and does too much, making the system rigid and hard to maintain."
+  },
+  {
+    "id": 5,
+    "answer": "Config in Code",
+    "source": "12 Factor App",
+    "clues": [
+      "Deploying to staging requires changing source files and rebuilding the artifact",
+      "The database connection string is different on every developer's machine, causing constant local config edits",
+      "We can't promote the same build artifact from staging to production without a code change",
+      "API keys and service URLs are hardcoded as string literals scattered across the codebase",
+      "The app reads its configuration from constants in source files rather than from environment variables",
+      "Environment-specific settings like database URLs and API keys are committed directly in source code instead of being injected via environment variables at runtime"
+    ],
+    "explanation": "A violation of the twelve-factor app principle that configuration varying between deploys should be stored in environment variables, not hardcoded in the application source."
+  },
+  {
+    "id": 6,
+    "answer": "Cascading Failure",
+    "source": "Google SRE Book",
+    "clues": [
+      "An unrelated microservice went down and somehow our entire platform followed",
+      "The initial failure was minor, but within minutes every dependent service was returning errors",
+      "Each service that failed increased load on the remaining healthy instances, causing them to fail too",
+      "The overloaded authentication service caused the API gateway to queue up, which timed out the frontend, which retried aggressively",
+      "Failure propagated through the dependency chain: Service A overwhelmed Service B, which overwhelmed Service C",
+      "A single component failure triggered a domino effect where each downstream dependency collapsed in sequence under redistributed load"
+    ],
+    "explanation": "A failure mode where the failure of one component causes increasing load or errors on other components, leading to a progressive chain of failures across the system."
+  },
+  {
+    "id": 7,
+    "answer": "Shotgun Surgery",
+    "source": "Martin Fowler",
+    "clues": [
+      "Simple feature requests take weeks because so many files need to change",
+      "A seemingly trivial change to the pricing logic required modifying 15 different classes",
+      "Every time we update the user model, we have to grep the entire codebase for places that reference it",
+      "The same type of change is scattered across dozens of files instead of being localized in one module",
+      "Adding a single field to the domain object required edits in the controller, three services, two serializers, and four tests",
+      "A single logical change forces many small edits scattered across numerous classes because the responsibility is not cohesive"
+    ],
+    "explanation": "A code smell where a single change requires making many small modifications to many different classes, indicating that a single responsibility is spread across the codebase."
+  },
+  {
+    "id": 8,
+    "answer": "Replication Lag",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Users occasionally see stale data right after making updates",
+      "A customer updates their profile but the change doesn't appear when they immediately refresh",
+      "The read replicas are several seconds behind the primary during peak write load",
+      "Read-after-write consistency breaks because the read hits a follower that hasn't caught up to the leader yet",
+      "The streaming replication position on the replica is minutes behind the WAL position on the primary",
+      "Asynchronous replication from leader to follower introduces a delay where reads from the follower return data that is seconds or minutes stale"
+    ],
+    "explanation": "The delay between a write being applied on the primary database and that same write being reflected on read replicas, causing temporary inconsistency."
+  },
+  {
+    "id": 9,
+    "answer": "Toil",
+    "source": "Google SRE Book",
+    "clues": [
+      "The on-call engineer spends most of their shift doing the same repetitive tasks",
+      "This manual work grows linearly with service size and doesn't produce lasting value",
+      "The team spends 60% of their time on operational tasks that could be automated",
+      "Every weekly release requires an engineer to manually run the same 20-step deployment checklist",
+      "These repetitive, automatable, reactive operational tasks provide no enduring value and scale linearly with service growth",
+      "Manual, repetitive, automatable operational work that scales linearly with service size, as defined by the SRE practice as work that should be systematically eliminated"
+    ],
+    "explanation": "Work tied to running a production service that is manual, repetitive, automatable, tactical, and scales linearly with service size, producing no lasting improvement."
+  },
+  {
+    "id": 10,
+    "answer": "Feature Envy",
+    "source": "Martin Fowler",
+    "clues": [
+      "This method doesn't seem to belong in the class where it's defined",
+      "The function accesses more data from another object than from its own",
+      "It calls six getters on the Order object but only uses one field from its own class",
+      "The calculateShipping method in the InvoiceService class uses five fields from the Order class and none from InvoiceService",
+      "This method is more interested in the data of another class than its own, suggesting it should be moved",
+      "A method that extensively uses fields and methods of another class rather than its own, indicating it belongs on the other class"
+    ],
+    "explanation": "A code smell where a method accesses the data of another object more than its own, suggesting the method should be moved to the class whose data it actually uses."
+  },
+  {
+    "id": 11,
+    "answer": "Error Budget",
+    "source": "Google SRE Book",
+    "clues": [
+      "The product team and SRE team are arguing about whether to ship a risky feature or focus on reliability",
+      "We need a quantitative way to balance the pace of innovation against system stability",
+      "The team is allowed to take reliability risks as long as the service hasn't consumed its quarterly allocation of acceptable downtime",
+      "With 99.9% SLO, we have 43.2 minutes of allowed downtime this month, and we've used 20 of them",
+      "Once the remaining allowance of unreliability is exhausted, all feature releases are frozen until reliability improves",
+      "The quantified amount of acceptable unreliability derived from the SLO, used to govern the trade-off between feature velocity and reliability"
+    ],
+    "explanation": "The amount of unreliability a service is allowed to have, calculated as 1 minus the SLO target, used to make objective decisions about the trade-off between reliability and feature development."
+  },
+  {
+    "id": 12,
+    "answer": "Alert Fatigue",
+    "source": "Google SRE Book",
+    "clues": [
+      "The on-call engineer has started ignoring pages because most of them don't require action",
+      "Our monitoring system fires hundreds of alerts daily, and the team has become desensitized",
+      "A real production outage was missed because the critical page was buried among dozens of noisy false positives",
+      "Over 85% of the alerts that fire are acknowledged and immediately closed without any remediation action",
+      "The team's MTTA has tripled because engineers assume every new page is another false positive",
+      "Excessive non-actionable alerts have desensitized the on-call team to the point where genuine critical alerts are routinely ignored or delayed"
+    ],
+    "explanation": "A condition where the volume of non-actionable or low-priority alerts desensitizes operators, causing them to ignore or slowly respond to genuinely critical alerts."
+  },
+  {
+    "id": 13,
+    "answer": "Capacity Planning Failure",
+    "source": "Google SRE Book",
+    "clues": [
+      "The system performed fine during testing but fell over within hours of a product launch",
+      "Nobody anticipated how much traffic the new marketing campaign would drive",
+      "The service ran out of CPU and memory headroom because growth projections were never modeled",
+      "Our Black Friday traffic was 4x our provisioned capacity because we only planned for average load",
+      "There was no forecast model mapping projected user growth to required compute, storage, and network resources",
+      "The failure to model and provision infrastructure ahead of anticipated demand growth led to a preventable outage during a predictable traffic spike"
+    ],
+    "explanation": "The failure to anticipate and provision sufficient resources for future demand, leading to outages or degraded performance during predictable traffic increases."
+  },
+  {
+    "id": 14,
+    "answer": "Load Shedding",
+    "source": "Google SRE Book",
+    "clues": [
+      "During the traffic spike, the system should have rejected some requests instead of trying to serve them all",
+      "The service could have stayed up if it deliberately dropped low-priority requests when overloaded",
+      "We need a mechanism to prioritize critical traffic and intentionally reject excess requests before the system is overwhelmed",
+      "The reverse proxy is configured to return 503 for new requests once in-flight requests exceed a threshold",
+      "When the queue depth exceeds the configured limit, the server drops the oldest non-critical requests to protect capacity for high-priority ones",
+      "The deliberate rejection of excess or low-priority traffic during overload to preserve the system's ability to serve critical requests"
+    ],
+    "explanation": "A reliability technique where a system intentionally drops or rejects lower-priority requests during overload to preserve its ability to serve higher-priority traffic."
+  },
+  {
+    "id": 15,
+    "answer": "Retry Storm",
+    "source": "Google SRE Book",
+    "clues": [
+      "The failing service recovered momentarily but immediately crashed again under a new wave of traffic",
+      "Client-side retries are making the overload situation exponentially worse",
+      "Each failed request triggers three automatic retries, tripling the load on an already struggling backend",
+      "Aggressive retry logic with no backoff turned a partial outage into a total one by multiplying the request volume",
+      "The combination of immediate retries from thousands of clients amplified the original load by 10x, preventing any recovery",
+      "Clients aggressively retrying failed requests without exponential backoff or jitter create an amplification loop that deepens the overload they are trying to recover from"
+    ],
+    "explanation": "A failure amplification pattern where clients retrying failed requests without backoff or jitter multiply the load on an already overloaded system, preventing recovery."
+  },
+  {
+    "id": 16,
+    "answer": "Monitoring Blindspot",
+    "source": "Google SRE Book",
+    "clues": [
+      "The outage lasted two hours before anyone noticed, even though monitoring was supposedly in place",
+      "We had metrics for CPU and memory, but the actual failure mode was something we never thought to measure",
+      "The disk was filling up on a non-standard partition that wasn't covered by our standard monitoring template",
+      "No alert existed for the message queue depth, so we didn't know it was backed up until consumers timed out",
+      "Critical business metrics like checkout success rate had no dashboards or alerts, only infrastructure-level metrics were tracked",
+      "A gap in observability coverage where a critical failure mode has no corresponding metric, alert, or dashboard, allowing failures to go undetected"
+    ],
+    "explanation": "An observability gap where important failure modes, system behaviors, or business metrics lack monitoring coverage, allowing problems to go undetected until they cause visible impact."
+  },
+  {
+    "id": 17,
+    "answer": "On-Call Burnout",
+    "source": "Google SRE Book",
+    "clues": [
+      "Senior engineers on the team are starting to leave, citing unsustainable working conditions",
+      "The rotation is too small, and engineers are paged multiple times every night shift",
+      "Team morale is low because operational interruptions leave no time for project work during on-call weeks",
+      "The same three engineers handle all production incidents because the team hasn't grown with the service's complexity",
+      "Engineers are averaging 4 pages per night shift and spending over 50% of their working hours on incident response",
+      "Chronic overload of on-call engineers due to high page volume, small rotation size, and insufficient automation, leading to exhaustion and attrition"
+    ],
+    "explanation": "The chronic exhaustion and attrition of engineers caused by excessive on-call burden, including high page frequency, small rotation sizes, and lack of automation to reduce operational load."
+  },
+  {
+    "id": 18,
+    "answer": "Release Engineering Bottleneck",
+    "source": "Google SRE Book",
+    "clues": [
+      "We want to ship faster but the deployment process itself is the constraint",
+      "Only one specific person knows how to do a production release, and they're on vacation",
+      "The release process involves 30 manual steps, three approval gates, and takes an entire day",
+      "Teams are batching weeks of changes into a single release because deploying is so costly and slow",
+      "The manual, error-prone, single-person-dependent release process limits the team to one deploy per week",
+      "The release pipeline is a manual, poorly automated process owned by a single person, creating a bottleneck that limits deployment frequency and increases batch size risk"
+    ],
+    "explanation": "A situation where the release and deployment process is so manual, complex, or dependent on specific individuals that it becomes the primary constraint on delivery velocity."
+  },
+  {
+    "id": 19,
+    "answer": "Graceful Degradation Failure",
+    "source": "Google SRE Book",
+    "clues": [
+      "When the recommendation engine is down, the entire product page returns a 500 error",
+      "A non-critical dependency failure is taking down critical user-facing functionality",
+      "The checkout flow fails completely because the analytics service is unreachable, even though analytics is not essential for checkout",
+      "The system has no fallback behavior: every dependency is treated as hard, and any failure is a total failure",
+      "When the personalization microservice times out, the page should show generic content instead of an error, but it doesn't",
+      "The system lacks fallback paths for non-critical dependencies, causing total failure instead of reduced functionality when optional services are unavailable"
+    ],
+    "explanation": "The failure to design a system that can continue providing core functionality in a reduced capacity when non-critical dependencies become unavailable."
+  },
+  {
+    "id": 20,
+    "answer": "Postmortem Blame Culture",
+    "source": "Google SRE Book",
+    "clues": [
+      "Engineers are reluctant to report incidents because they fear being punished",
+      "The last incident review turned into a finger-pointing session about who made the bad deploy",
+      "People are hiding mistakes instead of surfacing them, so the team keeps making the same errors",
+      "The postmortem concluded with 'John should have known better' instead of identifying systemic improvements",
+      "Root cause analysis focuses on individual human error rather than the system conditions that made the error possible and undetectable",
+      "Incident retrospectives focus on assigning personal blame rather than identifying systemic fixes, discouraging transparency and preventing organizational learning"
+    ],
+    "explanation": "An organizational anti-pattern where incident reviews focus on blaming individuals rather than identifying systemic improvements, discouraging transparency and preventing learning from failures."
+  },
+  {
+    "id": 21,
+    "answer": "Change Management Failure",
+    "source": "Google SRE Book",
+    "clues": [
+      "Most of our outages are caused by something someone changed, not by hardware failures",
+      "A config push went out to production without review and broke authentication for all users",
+      "There's no process to track, review, or roll back changes made to production systems",
+      "The engineer pushed a database migration directly to production during peak hours without telling anyone",
+      "70% of incidents trace back to changes deployed without peer review, canary testing, or a rollback plan",
+      "The absence of structured processes for reviewing, testing, and rolling back production changes causes a disproportionate number of outages to be change-induced"
+    ],
+    "explanation": "The lack of structured processes for controlling changes to production systems, resulting in unreviewed, untested changes being a leading cause of outages."
+  },
+  {
+    "id": 22,
+    "answer": "Incident Response Chaos",
+    "source": "Google SRE Book",
+    "clues": [
+      "During the last outage, nobody knew who was in charge or what to do first",
+      "Five engineers were all debugging different theories with no coordination",
+      "There were no runbooks, no defined roles, and the communication channel was a mess of unrelated threads",
+      "The incident commander role doesn't exist, so three people simultaneously made conflicting decisions",
+      "There is no defined incident response framework: no commander, no communication lead, no predefined runbooks, and no structured escalation path",
+      "The absence of defined roles, runbooks, communication protocols, and an incident commander leads to uncoordinated, slow, and error-prone incident response"
+    ],
+    "explanation": "The lack of a structured incident management process with defined roles, communication protocols, and runbooks, leading to disorganized and ineffective incident response."
+  },
+  {
+    "id": 23,
+    "answer": "Resource Exhaustion",
+    "source": "Google SRE Book",
+    "clues": [
+      "The service is returning errors but there's no logic bug; the code hasn't changed in weeks",
+      "Performance degrades gradually over days until the service eventually crashes",
+      "The container keeps getting OOM-killed because a memory leak slowly consumes all available RAM",
+      "File descriptors hit the OS limit because connections are opened but never closed",
+      "The process ran out of available file descriptors, thread pool capacity, or heap memory due to a leak or missing resource limits",
+      "A critical system resource such as memory, file descriptors, disk space, or connection pool slots is fully consumed, causing the service to fail or hang"
+    ],
+    "explanation": "A failure mode where a finite system resource like memory, file descriptors, disk space, or connections is fully consumed, causing the service to degrade or crash."
+  },
+  {
+    "id": 24,
+    "answer": "Health Check Inadequacy",
+    "source": "Google SRE Book",
+    "clues": [
+      "The load balancer thinks all instances are healthy, but users are getting errors",
+      "The health endpoint returns 200 OK even when the service can't actually serve requests",
+      "Our health check only verifies the process is running, not that it can reach its database or process work",
+      "The instance passed the TCP liveness check but its connection pool to the database was exhausted",
+      "The /health endpoint returns 200 as long as the HTTP server is up, but doesn't verify database connectivity, cache availability, or downstream dependency health",
+      "Shallow health checks that only confirm process liveness without validating actual readiness to serve traffic, causing load balancers to route requests to broken instances"
+    ],
+    "explanation": "A reliability gap where health check endpoints are too shallow to detect meaningful failures, causing traffic to be routed to instances that are running but unable to serve requests."
+  },
+  {
+    "id": 25,
+    "answer": "Circuit Breaker Absence",
+    "source": "Google SRE Book",
+    "clues": [
+      "When the payment provider is slow, our entire checkout flow becomes slow too",
+      "The service keeps sending requests to a known-broken dependency, tying up threads waiting for timeouts",
+      "We need a mechanism to stop calling a failing downstream service and fail fast instead",
+      "All threads are blocked waiting on a downstream service that's been returning 503s for the past five minutes",
+      "There's no mechanism to detect a failing dependency and temporarily short-circuit calls to it with a fast failure response",
+      "The absence of a pattern that monitors downstream failures and temporarily stops sending requests to a broken service, instead failing fast and returning a fallback"
+    ],
+    "explanation": "The lack of a circuit breaker pattern that detects when a downstream dependency is failing and temporarily stops sending requests to it, instead failing fast to prevent resource exhaustion."
+  },
+  {
+    "id": 26,
+    "answer": "Deployment Rollback Failure",
+    "source": "Google SRE Book",
+    "clues": [
+      "The bad deploy is causing errors, but we can't undo it quickly",
+      "We realized the release was broken in production, but there's no automated way to revert to the previous version",
+      "The rollback script hasn't been tested in months and failed when we tried to use it during the incident",
+      "A database migration in the release was not backward-compatible, so reverting the code didn't fix the problem",
+      "The deployment pipeline has no one-click rollback; reverting requires a manual cherry-pick, rebuild, and redeploy process",
+      "The inability to quickly and reliably revert a bad deployment due to untested rollback procedures, irreversible migrations, or missing previous artifacts"
+    ],
+    "explanation": "The inability to quickly revert a bad deployment due to missing rollback automation, untested procedures, irreversible database migrations, or unavailable previous build artifacts."
+  },
+  {
+    "id": 27,
+    "answer": "Timeout Misconfiguration",
+    "source": "Google SRE Book",
+    "clues": [
+      "Requests are hanging for a very long time before finally returning an error",
+      "The client-side timeout is longer than the server-side timeout, causing confusing error behavior",
+      "Threads are stuck waiting on a downstream call with a 60-second default timeout instead of a sensible 2-second limit",
+      "The HTTP client was configured with the library's default 30-second timeout, which is far too long for a service that should respond in 100ms",
+      "Upstream timeouts are shorter than downstream timeouts, causing the upstream to retry while the downstream is still processing the original request",
+      "Improperly configured timeouts across the request chain, such as defaults that are too long or mismatched layers, cause thread exhaustion, cascading delays, and duplicate work"
+    ],
+    "explanation": "Incorrectly set timeout values across a service chain that lead to resource waste, thread pool exhaustion, or cascading delays because timeouts are too long, too short, or misaligned between layers."
+  },
+  {
+    "id": 28,
+    "answer": "Service Level Objective Violation",
+    "source": "Google SRE Book",
+    "clues": [
+      "Users are complaining about slowness, but the engineering team says the system is 'up'",
+      "We promised 99.9% availability but delivered 99.5% last quarter, and customers are unhappy",
+      "The gap between our promised performance and actual performance is eroding customer trust",
+      "Our p99 latency target is 200ms but we've been at 800ms for two weeks and no one flagged it",
+      "The formal reliability target agreed upon with stakeholders has been breached, but no defined remediation process was triggered",
+      "The measured reliability of the service has fallen below the formally agreed-upon target for availability or latency, triggering the need for corrective action"
+    ],
+    "explanation": "When a service's measured reliability or performance falls below the formally defined target agreed upon with stakeholders, indicating that corrective action is needed."
+  },
+  {
+    "id": 29,
+    "answer": "Overloaded Service",
+    "source": "Google SRE Book",
+    "clues": [
+      "Response times are climbing and error rates are spiking, but no new code was deployed",
+      "The CPU is pegged at 100% and the request queue is growing without bound",
+      "The service is receiving more traffic than it can handle, and it has no mechanism to reject excess load",
+      "Latency has gone from 50ms to 5 seconds because the service has no admission control and is trying to serve every request",
+      "The service has no rate limiting, no load shedding, and no auto-scaling, so it degrades badly under traffic spikes",
+      "A service receiving more requests than its capacity can handle, with no backpressure or admission control mechanisms, causing latency to spike and errors to cascade"
+    ],
+    "explanation": "A service that is receiving more traffic than it can handle without mechanisms like rate limiting, load shedding, or auto-scaling to manage the excess, causing severe degradation."
+  },
+  {
+    "id": 30,
+    "answer": "Automation Gap",
+    "source": "Google SRE Book",
+    "clues": [
+      "The team knows what needs to be done during incidents, but it takes too long to do it manually",
+      "Operational tasks that should take seconds are taking hours because they require human intervention",
+      "Scaling up requires an engineer to manually provision VMs, update configs, and restart services",
+      "The disaster recovery plan requires 47 manual steps, and during the last drill it took 6 hours instead of the target 30 minutes",
+      "Routine operational procedures like scaling, failover, and certificate rotation are documented in runbooks but not automated",
+      "Critical operational procedures remain manual despite being well-understood, repetitive, and automatable, increasing MTTR and operational burden"
+    ],
+    "explanation": "The gap between operational tasks that could be automated and those that are actually automated, increasing time-to-resolution and operational burden unnecessarily."
+  },
+  {
+    "id": 31,
+    "answer": "Long Method",
+    "source": "Martin Fowler",
+    "clues": [
+      "Reading this function requires scrolling through multiple screens",
+      "The method has six levels of nested conditionals and handles multiple unrelated concerns",
+      "It's nearly impossible to write a unit test for this function because it does too many things",
+      "This 300-line function handles validation, business logic, persistence, and notification in a single block",
+      "Extracting smaller methods from this function would make its intent clear and each piece independently testable",
+      "A single method that has grown so long it is hard to understand, test, or reuse, and should be decomposed into smaller, well-named methods"
+    ],
+    "explanation": "A code smell where a method has grown too long, handling multiple responsibilities in a single block, making it hard to understand, test, and maintain."
+  },
+  {
+    "id": 32,
+    "answer": "Large Class",
+    "source": "Martin Fowler",
+    "clues": [
+      "This file takes a long time to load in the IDE and is intimidating to new team members",
+      "The class has dozens of instance variables covering unrelated domains",
+      "It handles user management, reporting, notifications, and billing in one 3,000-line file",
+      "Multiple groups of methods in this class never use each other's instance variables, suggesting it should be split",
+      "The class could be decomposed into at least four smaller classes, each with a cohesive set of responsibilities",
+      "A class that has grown to contain too many instance variables and methods covering unrelated responsibilities, indicating it should be split into multiple focused classes"
+    ],
+    "explanation": "A code smell where a class has accumulated too many responsibilities, indicated by excessive instance variables and methods, suggesting it should be split into smaller, cohesive classes."
+  },
+  {
+    "id": 33,
+    "answer": "Duplicate Code",
+    "source": "Martin Fowler",
+    "clues": [
+      "A bug was fixed in one place but reappeared because the same logic exists elsewhere",
+      "Three different services have nearly identical validation logic, each with slightly different bugs",
+      "When the business rule changed, we had to update the same logic in five different files",
+      "Copy-pasted functions across modules have diverged over time, creating subtle behavioral inconsistencies",
+      "The same 40-line block of discount calculation logic appears verbatim in OrderService, CartService, and InvoiceService",
+      "Identical or near-identical code structures repeated in multiple locations instead of being extracted into a shared abstraction"
+    ],
+    "explanation": "A code smell where the same or very similar code exists in multiple places, making changes error-prone and leading to inconsistencies when one copy is updated but others are not."
+  },
+  {
+    "id": 34,
+    "answer": "Dead Code",
+    "source": "Martin Fowler",
+    "clues": [
+      "The codebase is larger than expected for what the application actually does",
+      "New developers waste time trying to understand functions that are never actually invoked",
+      "Code coverage reports show entire classes with zero execution, even in production",
+      "The feature was removed two years ago but the supporting code, routes, and database tables were never cleaned up",
+      "Static analysis reveals hundreds of functions that have no callers and no test coverage",
+      "Code that is never executed in any code path but remains in the codebase, adding confusion and maintenance burden without providing any value"
+    ],
+    "explanation": "Code that is no longer executed or reachable but remains in the codebase, increasing complexity and confusing developers without providing any value."
+  },
+  {
+    "id": 35,
+    "answer": "Primitive Obsession",
+    "source": "Martin Fowler",
+    "clues": [
+      "Validation logic for the same kind of data is scattered throughout the codebase",
+      "Phone numbers, email addresses, and currency amounts are all passed around as plain strings",
+      "A bug occurred because a function received a price in cents where it expected dollars, and both were just integers",
+      "The zipCode parameter is a raw string, so invalid values like 'hello' pass through without validation until they hit the database",
+      "Instead of defining a Money class, the code passes around raw integers for amounts and strings for currency codes",
+      "Using primitive types like strings and integers to represent domain concepts instead of creating small, meaningful value objects that encapsulate validation and behavior"
+    ],
+    "explanation": "A code smell where primitive types are used to represent domain concepts instead of creating small value objects, leading to scattered validation and type-safety issues."
+  },
+  {
+    "id": 36,
+    "answer": "Data Clumps",
+    "source": "Martin Fowler",
+    "clues": [
+      "Several method signatures in the codebase look suspiciously similar with the same group of parameters",
+      "The same three parameters always appear together across multiple function calls",
+      "Every function dealing with addresses takes street, city, state, and zip as four separate parameters",
+      "Changing the representation of a coordinate requires updating latitude and longitude parameters in 30+ function signatures",
+      "The parameters (startDate, endDate, timezone) always travel together but have never been grouped into a DateRange object",
+      "Groups of data items that repeatedly appear together in method signatures and field declarations, suggesting they should be extracted into their own object"
+    ],
+    "explanation": "A code smell where the same group of data items frequently appears together in method parameters and class fields, suggesting they should be encapsulated in their own class."
+  },
+  {
+    "id": 37,
+    "answer": "Switch Statement Smell",
+    "source": "Martin Fowler",
+    "clues": [
+      "Every time a new type is added to the system, several places in the code need to be updated",
+      "There are multiple switch statements scattered across the codebase that all branch on the same type field",
+      "Adding a new payment method requires updating switch statements in five different classes",
+      "The same type-based branching logic is duplicated across the service: one switch for processing, one for validation, one for display",
+      "Each switch block checks the same enum and performs a type-specific operation, a pattern that could be replaced with polymorphism",
+      "Repeated switch or if-else chains that dispatch on the same type discriminator, indicating that polymorphism should replace conditional branching"
+    ],
+    "explanation": "A code smell where similar switch statements on the same type appear in multiple places, suggesting the conditional logic should be replaced with polymorphism."
+  },
+  {
+    "id": 38,
+    "answer": "Message Chains",
+    "source": "Martin Fowler",
+    "clues": [
+      "The code is tightly coupled to the internal structure of objects it doesn't directly own",
+      "A change to an intermediate object breaks callers that are three levels of navigation away",
+      "The line of code reads like a sentence: get the manager of the department of the division of the company",
+      "The expression user.getAccount().getSettings().getPreferences().getTheme() chains four navigations deep",
+      "Any structural change in the middle of the chain breaks all callers, coupling the client to the entire object graph",
+      "A chain of getA().getB().getC() calls where the client navigates through multiple objects to reach the data it needs, violating the Law of Demeter"
+    ],
+    "explanation": "A code smell where a client asks one object for another, then asks that for another, creating a long chain of navigations that couples the client to the structure of the entire object graph."
+  },
+  {
+    "id": 39,
+    "answer": "Middle Man",
+    "source": "Martin Fowler",
+    "clues": [
+      "This class doesn't seem to do anything except pass calls through to another class",
+      "The wrapper adds no logic, no transformation, and no value — it just delegates every method",
+      "Half the methods in this class are one-liners that simply call the same method on the wrapped object",
+      "The ServiceFacade class has 20 methods, and every single one just calls the corresponding method on ServiceImpl",
+      "Over-delegation has created a class that exists only to forward calls, adding an unnecessary layer of indirection",
+      "A class where the majority of methods simply delegate to another class without adding any behavior, indicating an unnecessary layer of abstraction"
+    ],
+    "explanation": "A code smell where a class exists primarily to delegate calls to another class without adding meaningful behavior, creating unnecessary indirection."
+  },
+  {
+    "id": 40,
+    "answer": "Inappropriate Intimacy",
+    "source": "Martin Fowler",
+    "clues": [
+      "Changing the private internals of one class breaks another class that shouldn't know about them",
+      "Two classes are so tightly coupled that they can't be modified or tested independently",
+      "Class A directly accesses the private fields of Class B through reflection or friend access",
+      "The Order class reaches into the internal list of the Customer class to modify it directly instead of using a public API",
+      "These two classes are excessively coupled, with each one accessing the other's internal details, making independent evolution impossible",
+      "Two classes that are overly involved with each other's private details, accessing internal fields and methods that should be hidden, creating a fragile bidirectional coupling"
+    ],
+    "explanation": "A code smell where two classes are excessively coupled by accessing each other's private internals, making them impossible to change independently."
+  },
+  {
+    "id": 41,
+    "answer": "Refused Bequest",
+    "source": "Martin Fowler",
+    "clues": [
+      "The subclass overrides most of the parent's methods to do nothing or throw exceptions",
+      "It feels wrong that this class extends that class — they don't really have an is-a relationship",
+      "The Stack class extends ArrayList but methods like get(index) and set(index) make no sense for a stack",
+      "The subclass inherits 15 methods from its parent but only uses 3, leaving the rest as confusing, useless API surface",
+      "The child class throws UnsupportedOperationException for half the inherited methods because they violate its semantics",
+      "A subclass that inherits methods and data from its parent but doesn't actually want or use most of them, indicating the inheritance hierarchy is wrong"
+    ],
+    "explanation": "A code smell where a subclass inherits behavior from its parent but doesn't use or want most of it, suggesting the inheritance relationship is inappropriate."
+  },
+  {
+    "id": 42,
+    "answer": "Speculative Generality",
+    "source": "Martin Fowler",
+    "clues": [
+      "The codebase has elaborate abstractions that only have one implementation",
+      "The framework was designed to handle 'future requirements' that never materialized",
+      "There are three layers of interfaces and abstract classes for a feature that only has one concrete use case",
+      "The PluginArchitecture was built two years ago to allow extensibility, but only one plugin was ever written",
+      "Abstract factories, strategy patterns, and hook methods were introduced for flexibility that was never needed",
+      "Overly abstract, parameterized code built for anticipated future use cases that never materialized, adding complexity without providing current value"
+    ],
+    "explanation": "A code smell where abstractions and generality are introduced based on speculated future requirements that never materialize, adding unnecessary complexity."
+  },
+  {
+    "id": 43,
+    "answer": "Temporary Field",
+    "source": "Martin Fowler",
+    "clues": [
+      "Some fields on this object are null most of the time and only populated in certain code paths",
+      "You can't trust the object's fields because some of them are only valid after certain methods are called",
+      "The class has fields that are only set during a specific calculation and are meaningless otherwise",
+      "The algorithm stores intermediate computation results in instance fields instead of local variables or a separate context object",
+      "The discountRate and taxAmount fields are only populated during the checkout flow and are null in every other context",
+      "Instance fields that are only set and used during a specific operation, remaining null or meaningless for the rest of the object's lifetime"
+    ],
+    "explanation": "A code smell where an object has fields that are only set under certain circumstances, being null or undefined the rest of the time, making the class harder to understand."
+  },
+  {
+    "id": 44,
+    "answer": "Parallel Inheritance Hierarchies",
+    "source": "Martin Fowler",
+    "clues": [
+      "Every time we add a new subclass in one hierarchy, we have to add a matching one in another",
+      "There are two parallel class trees that always change together, one for the model and one for the view",
+      "Adding a new vehicle type means creating VehicleType, VehicleTypeValidator, VehicleTypeSerializer, and VehicleTypeRenderer",
+      "The Shape hierarchy and the ShapeDrawer hierarchy mirror each other exactly, with a one-to-one correspondence",
+      "Every class in the domain hierarchy has a corresponding partner in the persistence hierarchy, and new types always require adding both",
+      "Two class hierarchies that mirror each other, where every new subclass in one hierarchy requires a corresponding new subclass in the other"
+    ],
+    "explanation": "A code smell where two inheritance hierarchies mirror each other, forcing every new class in one hierarchy to require a corresponding class in the other."
+  },
+  {
+    "id": 45,
+    "answer": "Lazy Class",
+    "source": "Martin Fowler",
+    "clues": [
+      "This class doesn't seem to justify its own existence in the codebase",
+      "After a refactoring, the class was left with only one trivial method and no real responsibility",
+      "The StringHelper class contains a single method that just calls String.trim()",
+      "The class was created as part of an anticipated feature that was descoped, leaving it with almost no behavior",
+      "It has one field and one getter; its entire purpose could be served by the class that uses it",
+      "A class that does too little to justify its existence, typically having been shrunk by refactoring or created speculatively, and should be inlined into its callers"
+    ],
+    "explanation": "A code smell where a class does so little that it doesn't justify the cost of understanding and maintaining it, suggesting it should be inlined or merged with another class."
+  },
+  {
+    "id": 46,
+    "answer": "Data Class",
+    "source": "Martin Fowler",
+    "clues": [
+      "This class is just a bag of fields with getters and setters, no real behavior",
+      "All the logic that operates on this class's data lives in other classes",
+      "The UserDTO has 12 fields and 24 accessor methods but zero business methods",
+      "Other classes reach into this object, pull out its fields, and perform calculations that should live on the object itself",
+      "The Order class has getters and setters for price, tax, and discount, but the actual calculation logic lives in OrderService",
+      "A class that contains only fields and accessors with no meaningful behavior, while the logic that should belong to it is placed in other classes"
+    ],
+    "explanation": "A code smell where a class has fields and accessors but no behavior, with all logic that manipulates its data living in external classes instead of on the object itself."
+  },
+  {
+    "id": 47,
+    "answer": "Comments as Deodorant",
+    "source": "Martin Fowler",
+    "clues": [
+      "The code is hard to read on its own, but there are extensive comments explaining what it does",
+      "Removing the comments would make the function completely incomprehensible",
+      "A long comment block explains a complex conditional, when the conditional itself should be extracted into a well-named method",
+      "The comment says 'check if user is eligible for discount' above a 20-line boolean expression that could be a method called isEligibleForDiscount()",
+      "Comments are being used to explain confusing code instead of rewriting the code to be self-explanatory",
+      "Comments used to explain poorly written code rather than improving the code itself, where renaming variables and extracting methods would eliminate the need for the comments"
+    ],
+    "explanation": "A code smell where comments are used to explain confusing or poorly structured code, when the real fix is to refactor the code to be self-explanatory through better naming and structure."
+  },
+  {
+    "id": 48,
+    "answer": "Divergent Change",
+    "source": "Martin Fowler",
+    "clues": [
+      "This one class keeps changing for completely unrelated reasons",
+      "It was modified last week for a database migration, this week for a UI change, and next week for a new business rule",
+      "The same file is touched by the database team, the frontend team, and the billing team for different reasons",
+      "The Customer class changes when we add a new payment method, when we change the email format, and when we update tax rules",
+      "This class has multiple independent axes of change, suggesting it should be split along those axes",
+      "A class that is modified for many different, unrelated reasons because it contains multiple unrelated responsibilities that should be separated into distinct classes"
+    ],
+    "explanation": "A code smell where a single class is changed for many different reasons, indicating it has multiple responsibilities that should be separated into different classes."
+  },
+  {
+    "id": 49,
+    "answer": "Long Parameter List",
+    "source": "Martin Fowler",
+    "clues": [
+      "Calling this function requires remembering the order of many arguments, and it's easy to mix them up",
+      "The function signature wraps across three lines in the IDE",
+      "A new requirement added yet another parameter, bringing the total to 12",
+      "Callers frequently pass null for several parameters because those parameters only apply in certain cases",
+      "createUser(name, email, phone, street, city, state, zip, country, role, department, startDate, managerId) is called in 40 places",
+      "A method with so many parameters that it is difficult to call correctly, understand, and maintain, suggesting parameters should be grouped into objects"
+    ],
+    "explanation": "A code smell where a method takes too many parameters, making it hard to call correctly and understand, suggesting related parameters should be grouped into parameter objects."
+  },
+  {
+    "id": 50,
+    "answer": "Dependency Isolation Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "The app works on one developer's machine but fails on another because of a missing system library",
+      "There's no explicit declaration of all the libraries the application needs",
+      "The deployment relies on certain packages being pre-installed on the host operating system",
+      "The build succeeds locally because ImageMagick is installed globally, but fails in the CI container where it's not",
+      "The app implicitly depends on system-wide packages instead of explicitly declaring and isolating all dependencies in a manifest",
+      "The application relies on implicit system-level dependencies instead of explicitly declaring all dependencies in a manifest and isolating them from the system environment"
+    ],
+    "explanation": "A violation of the twelve-factor principle that apps should explicitly declare all dependencies and not rely on the implicit existence of system-wide packages."
+  },
+  {
+    "id": 51,
+    "answer": "Port Binding Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "The application can't run without being deployed into a specific application server or container",
+      "We can't easily run two instances of the app because it's tightly coupled to its hosting environment",
+      "The app requires Tomcat to be pre-installed and configured instead of embedding its own HTTP server",
+      "Deploying to a different environment means reconfiguring the external web server rather than just starting the app",
+      "The application doesn't export HTTP as a service by binding to a port; instead it depends on an external runtime container to receive requests",
+      "The app fails to be self-contained by not embedding its own web server and binding to a port, instead requiring injection into an external application server"
+    ],
+    "explanation": "A violation of the twelve-factor principle that web apps should be self-contained, exporting HTTP by binding to a port, rather than requiring an external application server."
+  },
+  {
+    "id": 52,
+    "answer": "Stateful Processes",
+    "source": "12 Factor App",
+    "clues": [
+      "Scaling to multiple instances breaks user sessions because each server stores its own state",
+      "After a deploy, users are logged out because the session data was stored in the process memory that was replaced",
+      "The app stores file uploads in the local filesystem and the files disappear when the container is replaced",
+      "Sticky sessions are required on the load balancer because the app caches user data in-process",
+      "The application stores session state, cached data, and uploaded files in local memory or disk instead of external backing services",
+      "Application processes store persistent state locally in memory or on the filesystem instead of using external stateless backing services, breaking horizontal scalability"
+    ],
+    "explanation": "A violation of the twelve-factor principle that processes should be stateless and share-nothing, with any persistent data stored in external backing services."
+  },
+  {
+    "id": 53,
+    "answer": "Build-Release-Run Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "Someone SSH'd into production and edited a config file directly to fix a bug",
+      "There's no clear separation between compiling the code and deploying it to an environment",
+      "Hotfixes are applied directly to running production servers instead of going through the build pipeline",
+      "The same script that compiles the code also deploys it to production with no distinct release stage",
+      "The build, release, and run stages are not strictly separated: code is modified in production and builds are not reproducible or versioned",
+      "The strict separation between building code, combining it with config into a release, and running that release is violated, making deployments irreproducible and auditing impossible"
+    ],
+    "explanation": "A violation of the twelve-factor principle that the build, release, and run stages should be strictly separated, with releases being immutable and deployable."
+  },
+  {
+    "id": 54,
+    "answer": "Dev-Prod Parity Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "It works on my machine but breaks in production",
+      "Bugs keep appearing in production that can never be reproduced locally",
+      "Development uses SQLite but production uses PostgreSQL, and queries behave differently between them",
+      "The local dev environment uses mock services while production uses real third-party APIs with different behavior",
+      "Development, staging, and production environments differ significantly in backing services, OS, and configuration, causing environment-specific bugs",
+      "Large gaps between development and production environments in backing services, operating systems, and data cause bugs that only manifest in production and cannot be reproduced locally"
+    ],
+    "explanation": "A violation of the twelve-factor principle that development, staging, and production should be as similar as possible to reduce the risk of environment-specific bugs."
+  },
+  {
+    "id": 55,
+    "answer": "Log Management Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "Logs are written to files on the local disk and are lost when the container is recycled",
+      "There's no centralized way to search or correlate logs across all service instances",
+      "The application manages its own log rotation and file writing instead of writing to stdout",
+      "Debugging requires SSH'ing into each of the 12 production containers to grep local log files",
+      "The app writes logs to /var/log/app.log with its own rotation logic instead of writing to stdout for the execution environment to capture",
+      "The application manages its own log files instead of treating logs as an event stream written to stdout, preventing the execution environment from handling routing, storage, and analysis"
+    ],
+    "explanation": "A violation of the twelve-factor principle that apps should write logs as an unbuffered event stream to stdout, letting the execution environment handle routing and storage."
+  },
+  {
+    "id": 56,
+    "answer": "Disposability Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "Deployments take 10 minutes because the app takes forever to start up and shut down",
+      "Killing the process results in data loss because it doesn't handle termination signals gracefully",
+      "In-flight requests are dropped during deploys because the app doesn't drain connections before shutting down",
+      "The application takes 3 minutes to initialize because it builds caches and loads data on startup instead of deferring",
+      "SIGTERM is not handled: the process is force-killed after timeout, leaving half-processed jobs in an inconsistent state",
+      "The application cannot be started or stopped quickly and gracefully, violating the principle that processes should be disposable with fast startup and graceful shutdown"
+    ],
+    "explanation": "A violation of the twelve-factor principle that processes should be disposable, starting fast and shutting down gracefully on SIGTERM, enabling rapid elastic scaling and deployment."
+  },
+  {
+    "id": 57,
+    "answer": "Concurrency Scaling Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "We can only handle more traffic by adding RAM and CPU to a single machine",
+      "The application is designed to run as a single monolithic process and can't be horizontally scaled",
+      "Instead of running multiple small processes behind a load balancer, the app relies on a single multi-threaded process on a bigger server",
+      "Scaling is purely vertical because the app architecture uses a single process model instead of multiple process types",
+      "The app handles web requests, background jobs, and scheduled tasks in one process instead of using separate process types that can be independently scaled",
+      "The application scales vertically within a single process instead of horizontally across multiple processes of different types, violating the process model for concurrency"
+    ],
+    "explanation": "A violation of the twelve-factor principle that apps should scale out via the process model, using multiple process types for different workloads rather than scaling up a single process."
+  },
+  {
+    "id": 58,
+    "answer": "Admin Process Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "Database migrations are run manually by SSH'ing into a production server",
+      "One-off admin tasks use a different codebase or environment than the main application",
+      "The data migration script was written against a local database schema that differs from production",
+      "Admin scripts run on a developer's laptop with a different ORM version than production, causing schema mismatches",
+      "One-off administrative processes like migrations and data fixes are run in ad-hoc environments instead of identical release environments",
+      "Administrative and management tasks are run in different environments and codebases than the application itself, instead of running as one-off processes in identical environments"
+    ],
+    "explanation": "A violation of the twelve-factor principle that admin processes like database migrations should run as one-off processes in the same environment and codebase as the application."
+  },
+  {
+    "id": 59,
+    "answer": "Codebase Violation",
+    "source": "12 Factor App",
+    "clues": [
+      "Two services share code by copy-pasting from one repo to another, leading to drift",
+      "Different production servers run slightly different versions of the codebase",
+      "The same application has three separate Git repositories for three environments, and they've diverged",
+      "Some production customizations are maintained as patches on top of the main codebase in a separate repo",
+      "There is not a single codebase tracked in version control from which all deploys are derived",
+      "The application does not maintain a single codebase in version control with multiple deploys, instead using multiple repos or shared codebases that diverge"
+    ],
+    "explanation": "A violation of the twelve-factor principle that there should be exactly one codebase tracked in version control, with many deploys of that single codebase."
+  },
+  {
+    "id": 60,
+    "answer": "Backing Services Coupling",
+    "source": "12 Factor App",
+    "clues": [
+      "Switching from one email provider to another requires extensive code changes",
+      "The database driver is deeply embedded in the business logic rather than abstracted behind an interface",
+      "Moving from a local SMTP server to a cloud email service requires modifying 20 files",
+      "The app uses vendor-specific database features directly in business logic, making it impossible to swap the database without a rewrite",
+      "The application treats local and third-party backing services differently instead of accessing all of them through uniform resource locators in configuration",
+      "The application is tightly coupled to specific backing service implementations instead of treating them as attached resources swappable via configuration changes"
+    ],
+    "explanation": "A violation of the twelve-factor principle that backing services should be treated as attached resources, accessible via a URL or config, and swappable without code changes."
+  },
+  {
+    "id": 61,
+    "answer": "Write Amplification",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "The disk I/O is much higher than expected given the volume of data being written by the application",
+      "SSD wear is significantly higher than the logical write volume, reducing the drive's lifespan",
+      "The storage engine performs compaction and merging that multiplies the amount of data actually written to disk",
+      "Inserting 1 GB of data causes 10 GB of physical writes because the LSM-tree has multiple compaction levels",
+      "Each logical write triggers multiple physical writes due to the storage engine's merge and compaction processes",
+      "The ratio of physical bytes written to disk versus logical bytes written by the application is much greater than one, caused by the storage engine's internal compaction and reorganization"
+    ],
+    "explanation": "The phenomenon where a single logical write to the database results in multiple physical writes to disk due to the storage engine's internal structures like LSM-trees or B-trees."
+  },
+  {
+    "id": 62,
+    "answer": "Hotspot Partition",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "One database shard is overloaded while the others are nearly idle",
+      "The partitioning scheme looked good in theory but traffic is concentrated on a single node",
+      "A celebrity user's activity causes all their followers' reads to hit the same partition",
+      "Partitioning by user_id puts a disproportionate amount of traffic on the partition containing the most active user",
+      "The partition key has a skewed distribution, causing one partition to receive orders of magnitude more traffic than the rest",
+      "A single partition in a distributed database receives a disproportionate share of reads or writes due to skewed key distribution, creating a bottleneck despite having multiple nodes"
+    ],
+    "explanation": "A problem in distributed databases where a single partition receives disproportionately more traffic than others due to skewed data or access patterns in the partition key."
+  },
+  {
+    "id": 63,
+    "answer": "Last-Write-Wins Conflict",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Two users edited the same record simultaneously and one user's changes disappeared without warning",
+      "The system silently discards one of two concurrent updates to the same key",
+      "There's no conflict detection; the most recent timestamp always overwrites earlier values",
+      "Timestamps from two different nodes resolved the conflict, but clock skew caused the older logical write to be kept",
+      "Concurrent writes to the same key are resolved by keeping only the value with the highest timestamp, silently discarding the other",
+      "A conflict resolution strategy where concurrent writes to the same key are resolved by comparing timestamps and keeping only the latest, silently dropping earlier writes regardless of causal order"
+    ],
+    "explanation": "A conflict resolution strategy in distributed systems where concurrent writes to the same key are resolved by keeping the write with the highest timestamp, potentially losing valid data."
+  },
+  {
+    "id": 64,
+    "answer": "Linearizability Violation",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "A read that occurs after a confirmed write sometimes returns the old value",
+      "Two clients reading the same key at the same time get different values, even after the write completed",
+      "The lock service appears to grant the same lock to two clients simultaneously",
+      "After a successful compare-and-swap, a subsequent read from another node returns the pre-swap value",
+      "The system does not provide the illusion of a single copy of the data with atomic operations, causing stale reads even after writes are acknowledged",
+      "The system fails to provide the guarantee that all operations appear to execute atomically in a single total order consistent with real time, allowing stale reads after confirmed writes"
+    ],
+    "explanation": "A consistency violation where the system fails to provide the guarantee that reads always reflect the most recent completed write, breaking the illusion of a single copy of the data."
+  },
+  {
+    "id": 65,
+    "answer": "Eventual Consistency Confusion",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Users report that the UI shows conflicting information on different pages loaded at the same time",
+      "The shopping cart shows 3 items on one page and 2 items on another, moments apart",
+      "Developers assumed reads would immediately reflect writes, but the system only guarantees convergence over time",
+      "The frontend reads from a replica that hasn't received the latest write yet, showing the user a stale cart total",
+      "The system guarantees that all replicas will converge to the same value eventually, but provides no bound on when, causing confusion during the convergence window",
+      "Developers or users misunderstand the consistency model where replicas will eventually converge but may serve stale data in the interim, leading to surprising behavior during the replication delay window"
+    ],
+    "explanation": "The confusion that arises when developers or users expect strong consistency but the system provides eventual consistency, where replicas converge over time but may serve stale data."
+  },
+  {
+    "id": 66,
+    "answer": "Write Skew",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Two transactions each pass their validation checks individually but together produce an invalid state",
+      "The constraint is that at least one doctor must be on call, but two transactions simultaneously remove the last two",
+      "Each transaction reads a condition, decides to act, and writes, but the premise it checked is invalidated by the other transaction",
+      "The invariant is maintained by each transaction in isolation, but the combination of both transactions' writes violates it",
+      "Two concurrent transactions both read that the condition is safe, then both write changes that together violate the condition, because neither sees the other's uncommitted write",
+      "A concurrency anomaly where two transactions read the same data, make decisions based on what they read, and write, but the combination of their writes violates an invariant that neither individual write would break alone"
+    ],
+    "explanation": "A concurrency anomaly where two transactions each read overlapping data, make decisions based on it, and write, resulting in a state that violates an invariant even though each transaction individually was valid."
+  },
+  {
+    "id": 67,
+    "answer": "Phantom Reads",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "A query returns different rows when re-executed within the same transaction",
+      "The transaction counted 5 matching rows, but when it re-runs the query, it finds 6",
+      "Another transaction inserted a new row that matches the first transaction's WHERE clause between its two reads",
+      "Row-level locks don't prevent this anomaly because the conflicting row didn't exist when the first query ran",
+      "A range query sees new rows that were inserted by another concurrent transaction after the first read but before the second",
+      "A concurrency anomaly where a transaction re-executes a range query and finds new rows that were inserted by another committed transaction, because the new rows didn't exist to be locked during the first read"
+    ],
+    "explanation": "A concurrency anomaly where a transaction re-executes a query and finds rows that were inserted by another transaction, because row-level locks cannot prevent inserts matching the query's predicate."
+  },
+  {
+    "id": 68,
+    "answer": "Lost Update",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Two users edited the same wiki page and one user's changes were silently overwritten",
+      "The application performs read-modify-write cycles without any concurrency control",
+      "Two concurrent increments of a counter result in only one increment being applied",
+      "Both transactions read the balance as $100, each adds $50, and both write $150, instead of the correct $200",
+      "The second write overwrites the first because neither transaction was aware of the other's concurrent modification",
+      "A concurrency anomaly where two transactions read the same value, modify it, and write it back, with the second write overwriting the first, losing the first transaction's update entirely"
+    ],
+    "explanation": "A concurrency anomaly where two transactions read the same value, independently modify it, and write back, with the later write overwriting the earlier one, losing its update."
+  },
+  {
+    "id": 69,
+    "answer": "Two-Phase Commit Blocking",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "The distributed transaction is stuck and no participant can proceed or abort independently",
+      "All participants voted to commit, but the coordinator crashed before sending the final decision",
+      "Database resources are locked indefinitely because the transaction is in an uncertain state waiting for coordinator recovery",
+      "The participating nodes hold locks on rows and cannot release them until the coordinator comes back and tells them to commit or abort",
+      "After the coordinator crashes between the prepare and commit phases, participants are blocked holding locks with no way to resolve the transaction until the coordinator recovers",
+      "The distributed commit protocol blocks all participants indefinitely when the coordinator fails between the prepare and commit phases, because participants cannot safely commit or abort without the coordinator's decision"
+    ],
+    "explanation": "A failure mode of the two-phase commit protocol where participants become blocked holding locks when the coordinator crashes after participants have voted but before the commit/abort decision is delivered."
+  },
+  {
+    "id": 70,
+    "answer": "Leader Election Failure",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "The cluster has been unable to accept writes for several minutes while the nodes try to agree on a new primary",
+      "Network instability is causing the cluster to repeatedly start and fail the leader selection process",
+      "The old leader is still running but partitioned, while the remaining nodes cannot reach quorum to elect a new one",
+      "With two of five nodes unreachable, the remaining three cannot form a majority in some configurations, leaving the cluster leaderless",
+      "The consensus algorithm fails to elect a new leader due to network partitions, split votes, or loss of quorum, leaving the cluster unable to accept writes",
+      "The distributed consensus mechanism for selecting a single authoritative node fails due to network partitions, insufficient quorum, or repeated split votes, leaving the system without a leader and unable to process writes"
+    ],
+    "explanation": "A failure in distributed systems where the consensus algorithm for selecting a leader fails due to network issues, lack of quorum, or split votes, leaving the cluster unable to accept writes."
+  },
+  {
+    "id": 71,
+    "answer": "Fan-Out Problem",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "A single user action triggers requests to an impractically large number of downstream services",
+      "The home timeline query is slow because it must aggregate data from hundreds of followed accounts in real time",
+      "A single API call triggers parallel requests to 50 microservices, and the overall latency is dominated by the slowest one",
+      "The social media feed construction reads from every followed user's post table at query time instead of pre-computing the timeline",
+      "A read-time fan-out to hundreds of partitions or services means latency is bounded by the slowest responder and tail latencies are amplified",
+      "A system design where a single logical operation requires contacting a large number of nodes or services, amplifying tail latency and making the operation's reliability the product of all downstream reliabilities"
+    ],
+    "explanation": "A scalability challenge where a single logical operation requires contacting many downstream services or partitions, amplifying tail latency and reducing overall reliability."
+  },
+  {
+    "id": 72,
+    "answer": "Configuration Drift",
+    "source": "Google SRE Book",
+    "clues": [
+      "One production server behaves differently from the others for no apparent reason",
+      "A manual fix applied to one server months ago was never applied to the others or captured in the configuration management system",
+      "The servers were supposed to be identical, but manual SSH changes over time have made each one slightly different",
+      "Server 3 has a different version of a library, a custom cron job, and modified ulimits that no one documented",
+      "Servers that were originally provisioned identically have diverged due to ad-hoc manual changes that were never captured in infrastructure-as-code",
+      "Production servers that should be identical have diverged over time due to manual ad-hoc changes not captured in configuration management, causing inconsistent behavior across the fleet"
+    ],
+    "explanation": "The gradual divergence of configuration across servers that should be identical, caused by manual changes that are not captured in configuration management or infrastructure-as-code."
+  },
+  {
+    "id": 73,
+    "answer": "Observability Debt",
+    "source": "Google SRE Book",
+    "clues": [
+      "We know the system is broken but we can't figure out why because we have no visibility into its internals",
+      "Debugging production issues takes days because there are no traces, no structured logs, and few meaningful metrics",
+      "The service was built quickly without instrumentation, and now that it's in production, every incident is a black box",
+      "There are no distributed traces, so understanding the path of a request through 12 microservices requires manually correlating timestamps across log files",
+      "The system lacks structured logging, distributed tracing, and business-level metrics, making root cause analysis a multi-day manual effort for every incident",
+      "Chronic underinvestment in instrumentation, structured logging, distributed tracing, and meaningful metrics has left the system opaque, making incident diagnosis slow and error-prone"
+    ],
+    "explanation": "The accumulated deficit in observability tooling where insufficient investment in logging, tracing, and metrics makes the system's internal behavior opaque and incident diagnosis extremely difficult."
+  },
+  {
+    "id": 74,
+    "answer": "Connection Pool Exhaustion",
+    "source": "Google SRE Book",
+    "clues": [
+      "The application suddenly starts returning errors even though the database server is healthy and lightly loaded",
+      "New requests are timing out waiting to acquire a database connection",
+      "All available connections in the pool are checked out and none are being returned",
+      "A slow downstream query holds connections for 30 seconds each, and the pool of 20 connections is fully consumed under moderate load",
+      "The connection pool max size is reached because long-running queries or connection leaks prevent connections from being returned to the pool",
+      "All connections in the database connection pool are allocated and not returned due to long-running queries or leaks, causing new requests to block or fail while waiting for an available connection"
+    ],
+    "explanation": "When all database connections in the connection pool are consumed by long-running queries, leaks, or excessive concurrency, causing new requests to queue up and eventually time out."
+  },
+  {
+    "id": 75,
+    "answer": "Memory Leak",
+    "source": "Google SRE Book",
+    "clues": [
+      "The service works fine after a restart but gradually slows down and eventually crashes over several days",
+      "Heap usage grows steadily over time even though traffic is constant",
+      "The garbage collector is running more frequently and taking longer, eventually spending more time collecting than serving requests",
+      "Profiling reveals that event listener registrations accumulate over time because they are never removed when components are destroyed",
+      "Objects are allocated and referenced but never freed because references to them persist in a growing collection, cache, or listener registry",
+      "Gradual, unbounded growth in memory consumption caused by objects being allocated and retained indefinitely due to persistent references, eventually leading to out-of-memory crashes"
+    ],
+    "explanation": "A bug where the application progressively consumes more memory over time because allocated objects are never freed due to persistent references, eventually causing crashes."
+  },
+  {
+    "id": 76,
+    "answer": "Single Point of Failure",
+    "source": "Google SRE Book",
+    "clues": [
+      "When that one server goes down, the entire system goes down with it",
+      "The architecture has no redundancy for its most critical component",
+      "All traffic passes through a single load balancer with no failover instance",
+      "The entire platform depends on one non-redundant database master with no standby or failover capability",
+      "A single non-redundant component exists on the critical path such that its failure causes total system unavailability",
+      "An architectural flaw where a single non-redundant component on the critical path has no failover or redundancy, meaning its failure alone causes complete system unavailability"
+    ],
+    "explanation": "An architecture flaw where one non-redundant component exists on the critical path, making the entire system unavailable if that single component fails."
+  },
+  {
+    "id": 77,
+    "answer": "Certificate Expiry",
+    "source": "Google SRE Book",
+    "clues": [
+      "All HTTPS connections started failing simultaneously at a specific time with TLS handshake errors",
+      "Users see browser security warnings and cannot access the site",
+      "The TLS certificate reached its expiration date and was not renewed in time",
+      "The Let's Encrypt certificate auto-renewal cron job silently failed three months ago, and the certificate expired overnight",
+      "No monitoring existed for certificate expiration dates, so the TLS certificate expired without warning, breaking all HTTPS connections",
+      "A TLS certificate expired because automatic renewal failed silently and no monitoring tracked certificate expiry dates, causing sudden total loss of HTTPS connectivity"
+    ],
+    "explanation": "A preventable outage caused by a TLS certificate expiring because automatic renewal failed or was never configured, and no monitoring was in place to detect approaching expiry."
+  },
+  {
+    "id": 78,
+    "answer": "Noisy Neighbor",
+    "source": "Google SRE Book",
+    "clues": [
+      "Performance is inconsistent and seems to degrade at random times with no correlation to our own traffic",
+      "Latency spikes happen at the same time every day, but our load pattern hasn't changed",
+      "A co-tenant on the shared database instance is running heavy batch jobs that consume all available I/O",
+      "Our service shares a Kubernetes node with another pod that periodically consumes all available CPU, starving our containers",
+      "Another workload on the same shared infrastructure is consuming a disproportionate share of resources, degrading our service's performance",
+      "A co-located workload on shared infrastructure monopolizes shared resources like CPU, memory, disk I/O, or network bandwidth, causing unpredictable performance degradation for other tenants"
+    ],
+    "explanation": "When one workload on shared infrastructure consumes a disproportionate share of resources, causing unpredictable performance degradation for co-located workloads."
+  },
+  {
+    "id": 79,
+    "answer": "DNS Resolution Failure",
+    "source": "Google SRE Book",
+    "clues": [
+      "All services that depend on external APIs simultaneously started failing",
+      "The error logs show 'unknown host' for a service that was working fine minutes ago",
+      "The application cannot resolve any hostnames, causing every outbound HTTP request to fail",
+      "The internal DNS server became unreachable, and no service had cached DNS entries with sufficient TTL",
+      "DNS resolution is failing because the DNS server is down and local DNS caches have expired, breaking all hostname-dependent service communication",
+      "A DNS infrastructure failure causes hostname resolution to fail across services, breaking all network communication that depends on DNS rather than direct IP addressing"
+    ],
+    "explanation": "When DNS resolution infrastructure fails and cached DNS entries expire, causing all services that rely on hostname resolution to lose the ability to connect to their dependencies."
+  },
+  {
+    "id": 80,
+    "answer": "Runaway Query",
+    "source": "Google SRE Book",
+    "clues": [
+      "Database CPU suddenly spiked to 100% and all other queries started timing out",
+      "A single query is consuming all available database resources and blocking everything else",
+      "The query that was fine in development scans the entire production table because the index doesn't exist in production",
+      "A missing WHERE clause caused a SELECT to perform a full table scan on a 500-million-row table, locking the database",
+      "An unbounded or poorly optimized query consumes excessive CPU, I/O, or locks, monopolizing database resources and degrading all other queries",
+      "A single expensive database query without proper bounds, indexing, or timeouts consumes all available database resources, starving all other concurrent queries and degrading the entire system"
+    ],
+    "explanation": "A database query that consumes excessive resources due to missing indexes, missing bounds, or poor optimization, monopolizing the database and degrading all other concurrent operations."
+  },
+  {
+    "id": 81,
+    "answer": "Clock Skew",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Events in the distributed log appear out of order even though they definitely happened sequentially",
+      "The audit trail shows event B happening before event A, but we know A caused B",
+      "Timestamps from different servers disagree about the ordering of events by several hundred milliseconds",
+      "NTP synchronization drift between nodes causes the ordering of events to be unreliable when comparing wall-clock timestamps",
+      "Two servers assigned timestamps to concurrent events, but the timestamps suggest the wrong causal order because their clocks differ by 500ms",
+      "Physical clock differences between distributed nodes cause timestamp-based event ordering to be unreliable, as clocks on different machines are never perfectly synchronized"
+    ],
+    "explanation": "The difference in physical clock readings between distributed nodes, which makes timestamp-based event ordering unreliable in distributed systems."
+  },
+  {
+    "id": 82,
+    "answer": "Shard Rebalancing Storm",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Adding a new node to the cluster caused massive data movement and degraded performance for hours",
+      "The system is spending more time migrating data between nodes than serving actual requests",
+      "Rebalancing partitions after a topology change is saturating the network and starving normal read/write traffic",
+      "A single node was added to a hash-partitioned cluster, triggering a cascade of data migrations across all nodes",
+      "The rebalancing algorithm moves too many partitions at once when the cluster topology changes, overwhelming network and disk I/O",
+      "A cluster topology change triggers excessive simultaneous data migration across partitions, saturating network and disk resources and degrading service availability during rebalancing"
+    ],
+    "explanation": "When adding or removing nodes from a distributed cluster triggers excessive data redistribution that saturates resources and degrades service performance during the rebalancing period."
+  },
+  {
+    "id": 83,
+    "answer": "Backpressure Absence",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "The producer keeps sending data faster than the consumer can process it, causing unbounded queue growth",
+      "Memory usage keeps climbing because the message queue has no limit and the consumer can't keep up",
+      "The service eventually crashes with an out-of-memory error because it buffers all incoming requests without limit",
+      "The API gateway accepts requests at line rate but the downstream service can only handle 100 RPS, with no mechanism to slow the sender",
+      "There is no mechanism for a slow consumer to signal the fast producer to reduce its sending rate, causing unbounded buffering",
+      "The absence of a flow control mechanism where a slow consumer can signal an overwhelmed state to the producer, causing unbounded queue growth and eventual resource exhaustion"
+    ],
+    "explanation": "The lack of a flow control mechanism where downstream consumers can signal upstream producers to slow down, leading to unbounded buffering and eventual resource exhaustion."
+  },
+  {
+    "id": 84,
+    "answer": "Idempotency Failure",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "A network timeout caused the client to retry a payment, and the customer was charged twice",
+      "Duplicate messages in the queue cause the same order to be processed multiple times",
+      "The API endpoint is not safe to retry because repeating the same request produces different side effects each time",
+      "The payment was submitted twice due to a retry, and the server processed both because it has no deduplication mechanism",
+      "The POST endpoint creates a new resource each time it's called, with no idempotency key to detect and deduplicate retries",
+      "An operation that is not idempotent is retried after a transient failure, causing duplicate side effects because the server cannot distinguish a retry from a new request"
+    ],
+    "explanation": "When a non-idempotent operation is retried after a network failure, causing duplicate side effects because the system lacks deduplication or idempotency key mechanisms."
+  },
+  {
+    "id": 85,
+    "answer": "Schema Evolution Breakage",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "After deploying the new version, old messages in the queue started failing to deserialize",
+      "The producer and consumer disagree on the message format because they were deployed at different times",
+      "A field was renamed in the latest schema version, breaking all consumers still running the old version",
+      "The new service version can't read data written by the old version because backward compatibility was not maintained",
+      "A schema change removed a required field, and services running the old code crash when they encounter the new format",
+      "A schema change breaks forward or backward compatibility, causing failures when different system components running different schema versions try to read each other's data"
+    ],
+    "explanation": "When a change to a data schema breaks compatibility with existing data or with components still using the old schema, causing deserialization failures during rolling deployments."
+  },
+  {
+    "id": 86,
+    "answer": "Queue Poisoning",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "The background job queue is stuck and no new jobs are being processed",
+      "One malformed message keeps failing and being retried, blocking all messages behind it in the queue",
+      "The consumer crashes every time it tries to process a specific message, and the message keeps returning to the front of the queue",
+      "A single unprocessable message is consumed, causes an error, returns to the queue head, and is consumed again in an infinite loop",
+      "The dead letter queue was never configured, so a poison message blocks the entire queue by repeatedly failing and being redelivered",
+      "A message that consistently causes the consumer to fail is repeatedly redelivered to the front of the queue, blocking all subsequent messages because there is no dead letter mechanism"
+    ],
+    "explanation": "When an unprocessable message in a queue repeatedly causes consumer failures and returns to the queue head, blocking all subsequent message processing due to the lack of a dead letter queue."
+  },
+  {
+    "id": 87,
+    "answer": "Data Corruption Silent Spread",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "By the time we discovered the data quality issue, it had already propagated to downstream systems",
+      "A bug in the write path corrupted records for weeks before anyone noticed",
+      "The corrupted data was replicated to all replicas and backed up in that state, making recovery from backups useless",
+      "The data validation pipeline runs daily, but the corruption happened at the application layer and passed all database-level constraints",
+      "Corrupted data silently propagated through replication, ETL pipelines, and backups before detection, contaminating all copies including disaster recovery",
+      "Data corruption introduced at the application layer silently propagated through replication, backups, and downstream ETL systems before detection, making recovery impossible because all copies are corrupted"
+    ],
+    "explanation": "When data corruption goes undetected long enough to propagate through replication, backups, and downstream systems, contaminating all copies and making recovery from clean state impossible."
+  },
+  {
+    "id": 88,
+    "answer": "Consensus Overhead",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Write latency increased significantly after we added more nodes to the cluster for better fault tolerance",
+      "Every write requires acknowledgment from a majority of nodes before it's considered committed",
+      "Adding two more replicas for durability doubled the write latency because of the additional round trips required",
+      "The Raft consensus protocol requires a majority quorum to acknowledge each write, and network latency between geographically distributed nodes adds up",
+      "Write throughput is limited by the round-trip time needed for a majority of nodes to agree on each operation, making performance inversely proportional to cluster size and network distance",
+      "The latency and throughput cost of requiring a distributed consensus protocol to coordinate agreement across a majority of nodes for each write operation, especially across geographically distant data centers"
+    ],
+    "explanation": "The performance cost of requiring distributed consensus for writes, where each operation must wait for a quorum of nodes to agree, with latency proportional to network distance and cluster size."
+  },
+  {
+    "id": 89,
+    "answer": "Tombstone Accumulation",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Read performance keeps degrading even though the actual live data size hasn't grown",
+      "Deleting old data didn't reclaim disk space or improve query performance as expected",
+      "The storage engine marks records as deleted but doesn't immediately remove them, and they accumulate over time",
+      "Range scans are slow because the storage engine must skip over millions of deletion markers to find the live data",
+      "The LSM-tree has accumulated millions of tombstone markers from deletions that haven't been compacted away, making reads slower despite fewer live records",
+      "Soft-delete markers accumulate in the storage engine faster than compaction removes them, causing read amplification as queries must scan past millions of tombstones to find live data"
+    ],
+    "explanation": "When deletion markers (tombstones) in a storage engine accumulate faster than compaction processes them, degrading read performance as queries must scan past large numbers of inactive markers."
+  },
+  {
+    "id": 90,
+    "answer": "Dependency Cycle",
+    "source": "Martin Fowler",
+    "clues": [
+      "Deploying one service requires simultaneously deploying another service, and vice versa",
+      "The build order is impossible to determine because two modules depend on each other",
+      "Module A imports from Module B, and Module B imports from Module A, creating a compile-time circular reference",
+      "The services cannot be started independently because each requires the other to be running first, creating a chicken-and-egg deployment problem",
+      "Package A depends on Package B which depends on Package C which depends on Package A, forming a cycle that prevents independent versioning",
+      "A circular chain of dependencies between modules or services where A depends on B, B depends on C, and C depends on A, preventing independent building, testing, and deployment"
+    ],
+    "explanation": "A structural problem where modules or services form a circular chain of dependencies, preventing independent building, deployment, and versioning."
+  },
+  {
+    "id": 91,
+    "answer": "Boolean Blindness",
+    "source": "Martin Fowler",
+    "clues": [
+      "The function takes five boolean parameters and it's impossible to remember what each one controls",
+      "A bug was introduced because the third and fourth boolean arguments were accidentally swapped at the call site",
+      "The function call reads: processOrder(true, false, true, false, true) with no indication of what each flag means",
+      "Replacing the boolean parameters with an enum or named options would make the call site self-documenting",
+      "Multiple boolean flags passed as positional parameters create call sites that are unreadable and error-prone due to easy transposition",
+      "The use of multiple boolean parameters in method signatures creates cryptic call sites where the meaning of each true/false is opaque, leading to transposition bugs"
+    ],
+    "explanation": "A code smell where methods accept multiple boolean parameters, creating call sites that are impossible to read without checking the method signature, prone to argument transposition bugs."
+  },
+  {
+    "id": 92,
+    "answer": "Anemic Domain Model",
+    "source": "Martin Fowler",
+    "clues": [
+      "The domain objects are just data containers and all the business logic lives in service classes",
+      "The Order class has 20 getters and setters but no methods that express business rules",
+      "Business rules are scattered across multiple service classes instead of living on the domain objects they operate on",
+      "The domain model looks like a database schema with no behavior, and the service layer contains all the interesting logic",
+      "Domain objects contain only data fields and accessors, while service classes implement all business rules and invariants that should belong to the domain",
+      "A domain model where objects are pure data holders with no behavior, and all business logic is placed in procedural service classes, violating the principle that objects should encapsulate both data and behavior"
+    ],
+    "explanation": "An anti-pattern where domain objects contain only data with no behavior, and all business logic lives in separate service classes, missing the benefits of object-oriented encapsulation."
+  },
+  {
+    "id": 93,
+    "answer": "Premature Optimization",
+    "source": "Martin Fowler",
+    "clues": [
+      "The code is incredibly complex, and when asked why, the author says it's 'for performance'",
+      "A custom caching layer was built before measuring whether there was actually a performance problem",
+      "The developer replaced readable LINQ queries with hand-optimized loops, but profiling shows the code path accounts for 0.1% of execution time",
+      "Weeks were spent optimizing a function that profiling revealed is never in the hot path, while the actual bottleneck remains unaddressed",
+      "Complex, hard-to-maintain code was written to optimize a theoretical performance concern that was never validated by measurement or profiling",
+      "Code complexity was introduced to optimize performance before profiling identified an actual bottleneck, sacrificing readability and maintainability for a theoretical gain that may never materialize"
+    ],
+    "explanation": "The practice of making code more complex to optimize performance before measuring or profiling has identified an actual bottleneck, trading maintainability for unvalidated theoretical gains."
+  },
+  {
+    "id": 94,
+    "answer": "Leaky Abstraction",
+    "source": "Martin Fowler",
+    "clues": [
+      "Users of the API keep needing to understand implementation details to use it correctly",
+      "The ORM abstraction breaks down and you end up writing raw SQL to work around its limitations",
+      "The file-like network socket abstraction fails because network connections can silently drop, unlike local files",
+      "The 'transparent' remote procedure call abstraction leaks because network latency and partial failures behave nothing like local function calls",
+      "The abstraction hides the underlying complexity most of the time, but edge cases force the caller to understand and work around the implementation details",
+      "An abstraction that fails to fully hide its underlying complexity, forcing users to understand implementation details in edge cases that the abstraction doesn't properly handle"
+    ],
+    "explanation": "An abstraction that works well in simple cases but breaks down in edge cases, forcing users to understand the underlying implementation details it was supposed to hide."
+  },
+  {
+    "id": 95,
+    "answer": "Tight Coupling",
+    "source": "Martin Fowler",
+    "clues": [
+      "Changing one module always seems to break another seemingly unrelated module",
+      "The unit test for Class A requires instantiating and configuring Classes B, C, and D",
+      "The two modules share internal data structures directly instead of communicating through a stable interface",
+      "Modifying the internal representation of the User class requires changes in the OrderService, ReportGenerator, and EmailSender",
+      "Components are intertwined through shared mutable state, direct field access, and concrete class dependencies instead of interfaces",
+      "Components are so interdependent through shared internal details, concrete implementations, and mutable state that changing one requires changes to many others"
+    ],
+    "explanation": "A design problem where components are excessively interdependent through shared internal details, making it impossible to change one component without affecting many others."
+  },
+  {
+    "id": 96,
+    "answer": "Callback Hell",
+    "source": "Martin Fowler",
+    "clues": [
+      "The code is indented so deeply that it runs off the right side of the screen",
+      "Error handling is nearly impossible because each nested callback has its own separate error path",
+      "The asynchronous logic is nested five callbacks deep, making the control flow unreadable",
+      "Each step of the workflow is a callback inside a callback inside a callback, forming a pyramid of doom",
+      "The code would be far more readable using promises, async/await, or another abstraction instead of deeply nested callbacks",
+      "Deeply nested asynchronous callback functions forming a pyramid structure that makes control flow, error handling, and debugging extremely difficult"
+    ],
+    "explanation": "An anti-pattern where deeply nested asynchronous callbacks create code that is hard to read, maintain, and debug, often called the 'pyramid of doom.'"
+  },
+  {
+    "id": 97,
+    "answer": "Test Pollution",
+    "source": "Martin Fowler",
+    "clues": [
+      "Tests pass when run individually but fail when run as a suite in a specific order",
+      "The test results are non-deterministic and depend on which tests ran before them",
+      "One test modifies global state that another test depends on, but the state is never reset between tests",
+      "Test A sets a static configuration value and doesn't clean it up, causing Test B to fail because it assumes the default configuration",
+      "Shared mutable state modified by one test and not reset between test runs causes order-dependent test failures",
+      "Tests that modify shared mutable state without proper setup and teardown cause order-dependent failures, where tests pass in isolation but fail when run together in certain sequences"
+    ],
+    "explanation": "When tests modify shared state without proper cleanup, causing subsequent tests to fail depending on execution order, making the test suite unreliable and non-deterministic."
+  },
+  {
+    "id": 98,
+    "answer": "Log Amplification",
+    "source": "Google SRE Book",
+    "clues": [
+      "Disk space on the logging servers fills up during incidents, right when we need logs the most",
+      "The service writes so many log lines that the logging pipeline falls behind and starts dropping entries",
+      "Error handling code logs the full stack trace at ERROR level inside a retry loop, generating thousands of identical log entries per second",
+      "A single error condition inside a hot loop generates 10,000 identical log lines per second, overwhelming the logging infrastructure",
+      "Verbose logging in high-throughput code paths produces log volumes that saturate the disk, network, or logging pipeline, paradoxically degrading observability during incidents",
+      "Excessive logging in error paths or hot loops produces log volumes that overwhelm the logging infrastructure, filling disks and dropping log entries precisely when observability is most needed"
+    ],
+    "explanation": "When excessive logging during error conditions or high-throughput code paths overwhelms the logging infrastructure, paradoxically reducing observability during the incidents when logs are most valuable."
+  },
+  {
+    "id": 99,
+    "answer": "Distributed Deadlock",
+    "source": "Designing Data-Intensive Applications",
+    "clues": [
+      "Two services are both hanging, waiting for each other to respond",
+      "The request trace shows Service A waiting on Service B, and Service B waiting on Service A",
+      "Neither service can make progress because each holds a resource the other needs",
+      "Service A holds a lock on the user table and waits for Service B to release the order table, while Service B holds the order table lock and waits for Service A",
+      "Cross-service synchronous calls form a circular dependency where each service holds a resource and waits for a resource held by another",
+      "A deadlock spanning multiple distributed services where circular dependencies in resource acquisition cause all involved services to block indefinitely, each waiting for a resource held by another"
+    ],
+    "explanation": "A deadlock that spans multiple distributed services, where circular dependencies in resource acquisition cause all involved parties to wait indefinitely for each other."
+  },
+  {
+    "id": 100,
+    "answer": "Stale Cache Serving",
+    "source": "Google SRE Book",
+    "clues": [
+      "Users are seeing outdated information, but the database has the correct data",
+      "The product price was updated hours ago, but some users still see the old price",
+      "Cache invalidation logic has a bug that leaves expired entries in the cache layer",
+      "The CDN is serving a cached version of the page from before the content update, and the TTL hasn't expired yet",
+      "The application serves data from a cache layer that was not invalidated or refreshed after the underlying data changed",
+      "A caching layer continues to serve stale data after the source of truth has been updated, because cache invalidation or TTL management failed to trigger a refresh"
+    ],
+    "explanation": "A reliability issue where cached data becomes stale after the underlying data source is updated, but the cache continues serving outdated values due to failed invalidation or excessive TTL."
+  }
+]
