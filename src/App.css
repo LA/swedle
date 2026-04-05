@@ -221,7 +221,7 @@
 }
 
 .guess-input {
-  flex: 1;
+  width: 100%;
   background: var(--surface);
   border: 2px solid var(--border);
   color: var(--text);
