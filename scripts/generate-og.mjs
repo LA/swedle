@@ -63,11 +63,22 @@ const svg = await satori(
           props: {
             style: {
               display: 'flex',
-              gap: '12px',
-              fontSize: '40px',
+              gap: '10px',
               marginBottom: '40px',
             },
-            children: '\u{1F7E5}\u{1F7E5}\u{1F7E9}\u2B1C\u2B1C\u2B1C',
+            children: [
+              '#e94560', '#e94560', '#00b894', '#2a2a3e', '#2a2a3e', '#2a2a3e'
+            ].map(color => ({
+              type: 'div',
+              props: {
+                style: {
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '6px',
+                  background: color,
+                },
+              },
+            })),
           },
         },
         {
