@@ -360,8 +360,6 @@ export default function App() {
 
       {/* Game */}
       <main className="game">
-        <div className="source-badge">{puzzle.source}</div>
-
         {/* Clues */}
         <div className="clues-container">
           {puzzle.clues.map((clue, i) => {
