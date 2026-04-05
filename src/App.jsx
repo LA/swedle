@@ -136,6 +136,7 @@ export default function App() {
     if (!puzzle || gameStatus === 'playing' && clueResults.length === 0) return
     const state = loadState()
     state.todayGame = {
+      ...state.todayGame,
       date: getPSTDateString(),
       cluesRevealed,
       clueResults,
