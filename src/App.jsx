@@ -518,7 +518,7 @@ export default function App() {
           Based on the Google SRE Book, Martin Fowler's Catalog, 12 Factor App, and Designing Data-Intensive Applications
         </div>
         <div className="footer-credit">
-          {'\u00A9'} <a href="https://adar.la" target="_blank" rel="noopener noreferrer">Adar Butel</a> {'\u2014'} <a href="https://adar.la" target="_blank" rel="noopener noreferrer">adar.la</a>
+          {'\u00A9'} <a href="https://adar.la" target="_blank" rel="noopener noreferrer">Adar Butel</a>
         </div>
       </footer>
 
