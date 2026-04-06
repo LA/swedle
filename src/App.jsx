@@ -56,7 +56,7 @@ function generateShareText(dayNum, clueResults, won) {
     }
   }
   const score = won ? `${usedClues}/${TOTAL_CLUES}` : `X/${TOTAL_CLUES}`
-  return `Swedle #${dayNum + 1} \u2014 ${score} clues\n${blocks.join('')}\nswedle.com`
+  return `Swedle #${dayNum + 1} \u2014 ${score} clues\n${blocks.join('')}\nhttps://swedle.com`
 }
 
 function normalize(s) {
@@ -484,11 +484,11 @@ export default function App() {
               }).join(' ')}
             </div>
             <div className="result-actions">
-              <button className="btn btn-share btn-share-x" onClick={handleShareOnX}>
+              <button className="btn btn-share btn-share-x" onClick={handleShareOnX} aria-label="Share via X">
+                Share via
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M18.244 2H21.5l-7.11 8.128L22.75 22h-6.545l-5.126-7.145L4.83 22H1.57l7.605-8.693L1.25 2h6.71l4.633 6.47L18.244 2Zm-1.142 18.05h1.803L6.979 3.847H5.045L17.102 20.05Z"/>
                 </svg>
-                Share via X
               </button>
               <button className="btn btn-share btn-share-copy" onClick={handleCopyShare}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
