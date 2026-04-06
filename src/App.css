@@ -431,7 +431,6 @@
 }
 
 .btn-share {
-  background: var(--secondary);
   color: white;
   display: flex;
   align-items: center;
@@ -439,7 +438,15 @@
 }
 
 .btn-share:hover {
-  filter: brightness(1.2);
+  filter: brightness(1.08);
+}
+
+.btn-share-x {
+  background: #111111;
+}
+
+.btn-share-copy {
+  background: var(--secondary);
 }
 
 .copied-toast {

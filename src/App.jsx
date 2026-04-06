@@ -268,16 +268,11 @@ export default function App() {
     }
   }, [showAutocomplete, autocompleteIndex, filteredAnswers, handleGuess])
 
-  const handleShare = useCallback(async () => {
+  const handleCopyShare = useCallback(async () => {
     const text = generateShareText(dayNumber, clueResults, gameStatus === 'won')
 
     try {
-      if (navigator.share && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        await navigator.share({
-          title: `Swedle #${dayNumber + 1}`,
-          text,
-        })
-      } else if (navigator.clipboard?.writeText) {
+      if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text)
       } else {
         throw new Error('Clipboard API unavailable')
@@ -298,6 +293,12 @@ export default function App() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+  }, [dayNumber, clueResults, gameStatus])
+
+  const handleShareOnX = useCallback(() => {
+    const text = generateShareText(dayNumber, clueResults, gameStatus === 'won')
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
+    window.open(url, '_blank', 'noopener,noreferrer')
   }, [dayNumber, clueResults, gameStatus])
 
   const winPct = stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0
@@ -483,15 +484,18 @@ export default function App() {
               }).join(' ')}
             </div>
             <div className="result-actions">
-              <button className="btn btn-share" onClick={handleShare}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <path d="M8.59 13.51 15.42 17.49" />
-                  <path d="M15.41 6.51 8.59 10.49" />
+              <button className="btn btn-share btn-share-x" onClick={handleShareOnX}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M18.244 2H21.5l-7.11 8.128L22.75 22h-6.545l-5.126-7.145L4.83 22H1.57l7.605-8.693L1.25 2h6.71l4.633 6.47L18.244 2Zm-1.142 18.05h1.803L6.979 3.847H5.045L17.102 20.05Z"/>
                 </svg>
-                Share Result
+                Share via X
+              </button>
+              <button className="btn btn-share btn-share-copy" onClick={handleCopyShare}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                Copy Result
               </button>
               <button className="btn btn-secondary" onClick={() => setShowStats(true)}>
                 View Stats
