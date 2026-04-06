@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { getDefaultStats, buildTodayGameState, recordCompletedGame } from './gameState'
 import './App.css'
 
 const TOTAL_CLUES = 6
@@ -79,6 +80,7 @@ export default function App() {
   const [copied, setCopied] = useState(false)
   const [countdown, setCountdown] = useState(getTimeUntilMidnightPST())
   const [newClueIndex, setNewClueIndex] = useState(-1)
+  const [stats, setStats] = useState(() => loadState().stats || getDefaultStats())
 
   const inputRef = useRef(null)
   const autocompleteRef = useRef(null)
@@ -124,66 +126,47 @@ export default function App() {
       setClueResults(state.todayGame.clueResults)
       setGameStatus(state.todayGame.status)
     } else {
+      setCluesRevealed(1)
+      setClueResults([])
+      setGameStatus('playing')
+
       // Check if we need to show how-to for first time
       if (!state.stats) {
         setShowHowTo(true)
       }
     }
+
+    setStats(state.stats || getDefaultStats())
   }, [puzzle])
 
   // Persist game state
   useEffect(() => {
     if (!puzzle || gameStatus === 'playing' && clueResults.length === 0) return
     const state = loadState()
-    state.todayGame = {
-      ...state.todayGame,
-      date: getPSTDateString(),
+    const todayKey = getPSTDateString()
+
+    state.todayGame = buildTodayGameState(state.todayGame, {
+      todayKey,
       cluesRevealed,
       clueResults,
-      status: gameStatus,
-    }
+      gameStatus,
+    })
     saveState(state)
   }, [cluesRevealed, clueResults, gameStatus, puzzle])
 
   // Update stats when game ends
   useEffect(() => {
     if (gameStatus === 'playing' || !puzzle) return
-    const state = loadState()
-    if (state.todayGame?.statsRecorded) return
+    const nextState = recordCompletedGame(loadState(), {
+      gameStatus,
+      clueResults,
+      todayKey: getPSTDateString(),
+    })
 
-    const stats = state.stats || {
-      played: 0,
-      won: 0,
-      streak: 0,
-      maxStreak: 0,
-      distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
-    }
+    if (!nextState.todayGame?.statsRecorded) return
 
-    stats.played++
-    if (gameStatus === 'won') {
-      stats.won++
-      stats.distribution[clueResults.length] = (stats.distribution[clueResults.length] || 0) + 1
-
-      // Check streak
-      const prevDate = state.lastPlayed
-      const today = getPSTDateString()
-      const yesterday = new Date(new Date(today + 'T00:00:00').getTime() - 86400000)
-        .toLocaleDateString('en-CA')
-
-      if (prevDate === yesterday) {
-        stats.streak++
-      } else if (prevDate !== today) {
-        stats.streak = 1
-      }
-      stats.maxStreak = Math.max(stats.maxStreak, stats.streak)
-    } else {
-      stats.streak = 0
-    }
-
-    state.stats = stats
-    state.lastPlayed = getPSTDateString()
-    state.todayGame.statsRecorded = true
-    saveState(state)
+    saveState(nextState)
+    setStats({ ...nextState.stats, distribution: { ...nextState.stats.distribution } })
   }, [gameStatus, puzzle, clueResults])
 
   // Countdown timer
@@ -287,14 +270,27 @@ export default function App() {
 
   const handleShare = useCallback(async () => {
     const text = generateShareText(dayNumber, clueResults, gameStatus === 'won')
+
     try {
-      await navigator.clipboard.writeText(text)
+      if (navigator.share && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        await navigator.share({
+          title: `Swedle #${dayNumber + 1}`,
+          text,
+        })
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        throw new Error('Clipboard API unavailable')
+      }
+
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Fallback for mobile
       const textarea = document.createElement('textarea')
       textarea.value = text
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
       document.body.appendChild(textarea)
       textarea.select()
       document.execCommand('copy')
@@ -303,11 +299,6 @@ export default function App() {
       setTimeout(() => setCopied(false), 2000)
     }
   }, [dayNumber, clueResults, gameStatus])
-
-  const stats = loadState().stats || {
-    played: 0, won: 0, streak: 0, maxStreak: 0,
-    distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
-  }
 
   const winPct = stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0
   const maxDist = Math.max(1, ...Object.values(stats.distribution))
@@ -493,8 +484,12 @@ export default function App() {
             </div>
             <div className="result-actions">
               <button className="btn btn-share" onClick={handleShare}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M13 0a3 3 0 00-2.83 4.02L5.1 7.04A3 3 0 000 9a3 3 0 005.1 2.14l5.07 2.83A3 3 0 1016 13a3 3 0 00-.9-2.14L10.03 7.83A3 3 0 0010 7c0-.28-.04-.56-.1-.83l5.07-3.03A3 3 0 0013 0z"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.59 13.51 15.42 17.49" />
+                  <path d="M15.41 6.51 8.59 10.49" />
                 </svg>
                 Share Result
               </button>

@@ -8,6 +8,7 @@
     "generate-og": "node scripts/generate-og.mjs",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "node --test",
     "preview": "vite preview"
   },
   "dependencies": {
