@@ -5,12 +5,19 @@ import { buildTodayGameState, getDefaultStats, recordCompletedGame } from '../sr
 test('buildTodayGameState preserves statsRecorded on same day', () => {
   const todayGame = buildTodayGameState(
     { date: '2026-04-06', statsRecorded: true, cluesRevealed: 3, clueResults: ['wrong'], status: 'playing' },
-    { todayKey: '2026-04-06', cluesRevealed: 4, clueResults: ['wrong', 'skip'], gameStatus: 'playing' }
+    {
+      todayKey: '2026-04-06',
+      cluesRevealed: 4,
+      clueResults: ['wrong', 'skip'],
+      wrongGuesses: ['Cache Stampede'],
+      gameStatus: 'playing',
+    }
   )
 
   assert.equal(todayGame.statsRecorded, true)
   assert.equal(todayGame.cluesRevealed, 4)
   assert.deepEqual(todayGame.clueResults, ['wrong', 'skip'])
+  assert.deepEqual(todayGame.wrongGuesses, ['Cache Stampede'])
 })
 
 test('buildTodayGameState resets statsRecorded on a new day', () => {
@@ -23,6 +30,7 @@ test('buildTodayGameState resets statsRecorded on a new day', () => {
   assert.equal(todayGame.statsRecorded, false)
   assert.equal(todayGame.cluesRevealed, 1)
   assert.deepEqual(todayGame.clueResults, [])
+  assert.deepEqual(todayGame.wrongGuesses, [])
 })
 
 test('recordCompletedGame records a win, distribution, and streak', () => {

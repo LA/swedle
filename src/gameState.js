@@ -13,7 +13,7 @@ function getYesterdayDateString(todayKey) {
     .toLocaleDateString('en-CA')
 }
 
-export function buildTodayGameState(existingTodayGame, { todayKey, cluesRevealed, clueResults, gameStatus }) {
+export function buildTodayGameState(existingTodayGame, { todayKey, cluesRevealed, clueResults, gameStatus, wrongGuesses = [] }) {
   const isSameDay = existingTodayGame?.date === todayKey
 
   return {
@@ -21,6 +21,7 @@ export function buildTodayGameState(existingTodayGame, { todayKey, cluesRevealed
     date: todayKey,
     cluesRevealed,
     clueResults,
+    wrongGuesses,
     status: gameStatus,
     statsRecorded: isSameDay ? existingTodayGame?.statsRecorded === true : false,
   }

@@ -70,6 +70,7 @@ export default function App() {
 
   const [cluesRevealed, setCluesRevealed] = useState(1)
   const [clueResults, setClueResults] = useState([])
+  const [wrongGuesses, setWrongGuesses] = useState([])
   const [gameStatus, setGameStatus] = useState('playing') // playing | won | lost
   const [guess, setGuess] = useState('')
   const [showAutocomplete, setShowAutocomplete] = useState(false)
@@ -124,10 +125,12 @@ export default function App() {
     if (state.todayGame?.date === todayKey) {
       setCluesRevealed(state.todayGame.cluesRevealed)
       setClueResults(state.todayGame.clueResults)
+      setWrongGuesses(state.todayGame.wrongGuesses || [])
       setGameStatus(state.todayGame.status)
     } else {
       setCluesRevealed(1)
       setClueResults([])
+      setWrongGuesses([])
       setGameStatus('playing')
 
       // Check if we need to show how-to for first time
@@ -149,10 +152,11 @@ export default function App() {
       todayKey,
       cluesRevealed,
       clueResults,
+      wrongGuesses,
       gameStatus,
     })
     saveState(state)
-  }, [cluesRevealed, clueResults, gameStatus, puzzle])
+  }, [cluesRevealed, clueResults, wrongGuesses, gameStatus, puzzle])
 
   // Update stats when game ends
   useEffect(() => {
@@ -190,14 +194,34 @@ export default function App() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  const wrongGuessNamesByClueIndex = useMemo(() => {
+    let wrongGuessIndex = 0
+
+    return clueResults.map(result => {
+      if (result !== 'wrong') return ''
+      const wrongGuess = wrongGuesses[wrongGuessIndex] || ''
+      wrongGuessIndex += 1
+      return wrongGuess
+    })
+  }, [clueResults, wrongGuesses])
+
+  const wrongGuessSet = useMemo(() => {
+    return new Set(wrongGuesses.map(a => normalize(a)))
+  }, [wrongGuesses])
+
+  const availableAnswers = useMemo(() => {
+    if (!wrongGuessSet.size) return allAnswers
+    return allAnswers.filter(a => !wrongGuessSet.has(normalize(a)))
+  }, [allAnswers, wrongGuessSet])
+
   const filteredAnswers = useMemo(() => {
     if (!guess.trim() || !allAnswers.length) return []
     const q = normalize(guess)
     if (!q) return []
-    return allAnswers
+    return availableAnswers
       .filter(a => normalize(a).includes(q))
       .slice(0, 8)
-  }, [guess, allAnswers])
+  }, [guess, allAnswers, availableAnswers])
 
   const handleGuess = useCallback(() => {
     if (gameStatus !== 'playing' || !puzzle) return
@@ -205,7 +229,8 @@ export default function App() {
     if (!trimmed) return
 
     const isCorrect = normalize(trimmed) === normalize(puzzle.answer)
-    const isValidAnswer = allAnswers.some(a => normalize(a) === normalize(trimmed))
+    const matchingAnswer = availableAnswers.find(a => normalize(a) === normalize(trimmed))
+    const isValidAnswer = Boolean(matchingAnswer)
 
     if (!isValidAnswer) {
       setInputError(true)
@@ -220,6 +245,7 @@ export default function App() {
       setShowAutocomplete(false)
     } else {
       setClueResults(prev => [...prev, 'wrong'])
+      setWrongGuesses(prev => [...prev, matchingAnswer])
       setGuess('')
       setShowAutocomplete(false)
 
@@ -231,7 +257,7 @@ export default function App() {
         setTimeout(() => setNewClueIndex(-1), 500)
       }
     }
-  }, [guess, puzzle, gameStatus, cluesRevealed, allAnswers])
+  }, [guess, puzzle, gameStatus, cluesRevealed, availableAnswers])
 
   const handleSkip = useCallback(() => {
     if (gameStatus !== 'playing' || !puzzle) return
@@ -370,7 +396,7 @@ export default function App() {
                   <div className="clue-text">{clue}</div>
                   {result === 'wrong' && (
                     <div className="guess-result wrong">
-                      {'\u2717'} Wrong guess
+                      {'\u2717'} {wrongGuessNamesByClueIndex[i] || 'Wrong guess'}
                     </div>
                   )}
                   {result === 'skip' && (
@@ -456,6 +482,16 @@ export default function App() {
                 Skip
               </button>
             </div>
+            {wrongGuesses.length > 0 ? (
+              <div className="removed-guesses" aria-live="polite">
+                <div className="removed-guesses-label">Removed from search space</div>
+                <div className="removed-guesses-list">
+                  {wrongGuesses.map(a => (
+                    <span key={a} className="removed-guess">{a}</span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
 

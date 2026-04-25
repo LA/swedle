@@ -220,6 +220,38 @@
   gap: 8px;
 }
 
+.removed-guesses {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.removed-guesses-label {
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.removed-guesses-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.removed-guess {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--error-dim);
+  color: var(--error);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
 .guess-input {
   width: 100%;
   background: var(--surface);
