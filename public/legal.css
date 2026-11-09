@@ -1,0 +1,133 @@
+:root {
+  --bg: #0a0a0f;
+  --border: #2a2a3e;
+  --primary: #e94560;
+  --text: #e8e8ef;
+  --text-muted: #8888a0;
+  --text-dim: #555570;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: #e9456040; }
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+}
+
+.logo:hover { text-decoration: none; }
+
+.document { padding: 32px 0 48px; }
+
+.back {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-top: 4px;
+}
+
+.date {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 4px 0 24px;
+}
+
+h2 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 28px 0 8px;
+}
+
+p, li {
+  font-size: 15px;
+  color: #c4c4d2;
+}
+
+p + p, ul + p { margin-top: 12px; }
+
+ul { margin: 12px 0 0 20px; }
+li + li { margin-top: 6px; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.footer {
+  margin-top: auto;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.footer-presented {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+}
+
+.footer-presented strong { font-weight: 700; color: var(--text-muted); }
+.footer-presented:hover { text-decoration: none; color: var(--text-muted); }
+
+.footer-links { margin-top: 8px; }
+.footer-links a { color: var(--text-muted); }
+.footer-links span { margin: 0 6px; }
+
+@media (max-width: 480px) {
+  h1 { font-size: 24px; }
+  .document { padding-top: 24px; }
+}

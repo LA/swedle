@@ -545,8 +545,13 @@ export default function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-credit">
-          {'\u00A9'} <a href="https://adynato.com" target="_blank" rel="noopener noreferrer">ADYNATO</a>
+        <a className="footer-presented" href="https://adynato.com" target="_blank" rel="noopener noreferrer">
+          Presented by <strong>ADYNATO</strong>
+        </a>
+        <div className="footer-links">
+          <a href="/privacy">Privacy</a>
+          <span aria-hidden="true">{'\u00B7'}</span>
+          <a href="/terms">Terms</a>
         </div>
       </footer>
 
