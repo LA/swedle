@@ -62,3 +62,27 @@ export function recordCompletedGame(state, { gameStatus, clueResults, todayKey }
     },
   }
 }
+
+export function normalizeAnswer(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+// A guess wins if it matches the puzzle's answer or one of its accepted synonyms.
+export function isCorrectGuess(puzzle, guess) {
+  const g = normalizeAnswer(guess)
+  if (!g) return false
+  return [puzzle.answer, ...(puzzle.accept || [])].some(a => normalizeAnswer(a) === g)
+}
+
+// Unique guessable answers, preserving first-seen order.
+export function uniqueAnswers(puzzles) {
+  const seen = new Set()
+  const out = []
+  for (const p of puzzles) {
+    const key = normalizeAnswer(p.answer)
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(p.answer)
+  }
+  return out
+}

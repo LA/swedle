@@ -46,7 +46,8 @@ Puzzles are stored in `public/puzzles.json`. Each entry:
     "Clue 5",
     "Clue 6 — most specific"
   ],
-  "explanation": "One-line explanation shown after the answer is revealed."
+  "explanation": "One-line explanation shown after the answer is revealed.",
+  "accept": ["Optional other answers that mean the same thing and also count as correct"]
 }
 ```
 
@@ -54,7 +55,7 @@ Puzzles are stored in `public/puzzles.json`. Each entry:
 
 1. Fork the repo
 2. Add a new entry to `public/puzzles.json`
-3. Ensure: 6 clues (vague → specific), valid source, unique answer
+3. Ensure: 6 clues (vague → specific), valid source, unique answer, and list true synonyms of existing answers in `accept`
 4. Open a PR
 
 ## Tech Stack
@@ -79,4 +80,4 @@ npm run deploy
 
 ## License
 
-Apache 2.0 — © [Adar Butel](https://adar.la)
+Apache 2.0 — © [ADYNATO](https://adynato.com)

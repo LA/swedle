@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { getDefaultStats, buildTodayGameState, recordCompletedGame } from './gameState'
+import { getDefaultStats, buildTodayGameState, recordCompletedGame, isCorrectGuess, uniqueAnswers, normalizeAnswer } from './gameState'
 import './App.css'
 
 const TOTAL_CLUES = 6
@@ -59,9 +59,7 @@ function generateShareText(dayNum, clueResults, won) {
   return `Swedle #${dayNum + 1} \u2014 ${score} clues\n${blocks.join('')}\nhttps://swedle.com`
 }
 
-function normalize(s) {
-  return s.toLowerCase().replace(/[^a-z0-9]/g, '')
-}
+const normalize = normalizeAnswer
 
 export default function App() {
   const [puzzles, setPuzzles] = useState(null)
@@ -113,7 +111,7 @@ export default function App() {
 
   const allAnswers = useMemo(() => {
     if (!puzzles) return []
-    return puzzles.map(p => p.answer)
+    return uniqueAnswers(puzzles)
   }, [puzzles])
 
   // Load saved game state
@@ -228,7 +226,7 @@ export default function App() {
     const trimmed = guess.trim()
     if (!trimmed) return
 
-    const isCorrect = normalize(trimmed) === normalize(puzzle.answer)
+    const isCorrect = isCorrectGuess(puzzle, trimmed)
     const matchingAnswer = availableAnswers.find(a => normalize(a) === normalize(trimmed))
     const isValidAnswer = Boolean(matchingAnswer)
 
@@ -548,7 +546,7 @@ export default function App() {
       {/* Footer */}
       <footer className="footer">
         <div className="footer-credit">
-          {'\u00A9'} <a href="https://adar.la" target="_blank" rel="noopener noreferrer">Adar Butel</a>
+          {'\u00A9'} <a href="https://adynato.com" target="_blank" rel="noopener noreferrer">ADYNATO</a>
         </div>
       </footer>
 

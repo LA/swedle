@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buildTodayGameState, getDefaultStats, recordCompletedGame } from '../src/gameState.js'
+import { buildTodayGameState, getDefaultStats, recordCompletedGame, isCorrectGuess, uniqueAnswers } from '../src/gameState.js'
 
 test('buildTodayGameState preserves statsRecorded on same day', () => {
   const todayGame = buildTodayGameState(
@@ -112,4 +112,16 @@ test('recordCompletedGame is idempotent once stats are recorded', () => {
   })
 
   assert.equal(nextState, initialState)
+})
+
+test('isCorrectGuess accepts the answer and its synonyms, ignoring case and punctuation', () => {
+  const puzzle = { answer: 'Thundering Herd', accept: ['Cache Stampede'] }
+  assert.equal(isCorrectGuess(puzzle, 'thundering-herd'), true)
+  assert.equal(isCorrectGuess(puzzle, 'Cache Stampede'), true)
+  assert.equal(isCorrectGuess(puzzle, 'Retry Storm'), false)
+  assert.equal(isCorrectGuess({ answer: 'Toil' }, 'toil'), true)
+})
+
+test('uniqueAnswers dedupes by normalized answer', () => {
+  assert.deepEqual(uniqueAnswers([{ answer: 'A B' }, { answer: 'a-b' }, { answer: 'C' }]), ['A B', 'C'])
 })
